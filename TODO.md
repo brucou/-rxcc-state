@@ -1,4 +1,5 @@
 - package.json
+- webpack config ?? the best I still have Rx, keep it for now
 - contracts etc. ? remove dep. only used once!!
 - isArrayUpdateOperations can be inlined : remove dep
 - CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE to inline too
@@ -7,3 +8,4 @@
 - at some point, write more serious tests
   - specially with hierarchical part
 - at some point investigate MBT
+- rollup ?? when I get read of Rx subject for pub/sub
