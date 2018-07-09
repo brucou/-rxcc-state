@@ -6,8 +6,7 @@ There are numerous computations which can be described by a fixed set of
 - An user interface [can be seen as a state transducer](https://brucou.github
 .io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata), translating a user input into a user action,
  while modifying its internal state according to a predefined set of rules. 
-- A particularly interesting field of application is [model-based testing, and test input 
-generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf).
+- A particularly interesting field of application is [model-based testing, and test input generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf).
 
 # What is an Extended Hierarchical State Transducer ? 
 An [automaton](https://en.wikipedia.org/wiki/Automata_theory) is a construct made of states designed to determine if the input should be accepted 
