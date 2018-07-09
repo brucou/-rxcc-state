@@ -50,13 +50,13 @@ machine, which in addition to accepting inputs, and modifying its state accordin
 generate outputs.
 
 We propose here a library dealing with extended hierarchical state transducers, i.e. a state machine
-whose states can be other state machines (hierarchical part), which associate an output to an 
+whose states can be other state machines (hierarchical part), which (may) associate an output to an 
 input (transducer part), and whose input/output relation follows a logic guided by 
-predefined control states (state machine part), and which encapsulates a memory which can be 
-modified through predicates, and actions (extended part).
+predefined control states (state machine part), and an encapsulated memory which can be 
+modified through actions guarded by predicates (extended part).
 
-Note that if we add concurrency and messaging to extended hierarchical state machines, we get a 
-statechart. We made the decision to discard any concurrency mechanism and broadcast mechanism for
+Note that if we add concurrency and messaging (broadcast) to extended hierarchical state machines,
+ we get a statechart. We made the decision to discard any concurrency mechanism and broadcast mechanism for
  two reasons :
  
  - these are arguably the weak point of statecharts, specially when it comes to readability, and 
