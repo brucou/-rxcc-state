@@ -32,7 +32,7 @@ Let's build the concept progressively.
 
 An [automaton](https://en.wikipedia.org/wiki/Automata_theory) is a construct made of states designed to determine if the input should be accepted or rejected. It looks a lot like a basic board game where each space on the board represents a state. Each state has information about what to do when an input is received by the machine (again, rather like what to do when you land on the Jail spot in a popular board game). As the machine receives a new input, it looks at the state and picks a new spot based on the information on what to do when it receives that input at that state. When there are no more inputs, the automaton stops and the space it is on when it completes determines whether the automaton accepts or rejects that particular set of inputs.
 
-State machines and automata are essentially interchangeable terms. Automata is the favored terms 
+State machines and automata are essentially interchangeable terms. Automata is the favored term 
 when connoting automata theory, while state machines is more often used in the context of the 
 actual or practical usage of automata.
 
@@ -45,7 +45,7 @@ A hierarchical state machine is a state machine whose states can be themselves s
 Thus instead of having a set of states as in standard state machines, we have a hierarchy (tree) of 
 states describing the system under study.
 
-A [state transducer](https://en.wikipedia.org/wiki/Finite-state_transducer) is a sequential 
+A [state transducer](https://en.wikipedia.org/wiki/Finite-state_transducer) is a state 
 machine, which in addition to accepting inputs, and modifying its state accordingly, also 
 generate outputs.
 
