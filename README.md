@@ -24,8 +24,8 @@ describe succintly a class of standard state machines, parameterized by its set 
 
 A hierarchical state machine is a state machine whose states can be themselves state machines.
 
-A [state transducer](https://en.wikipedia.org/wiki/Finite-state_transducer) is a category of 
-state machine, which in addition to accepting inputs, and modifying its state accordingly, also 
+A [state transducer](https://en.wikipedia.org/wiki/Finite-state_transducer) is a sequential 
+machine, which in addition to accepting inputs, and modifying its state accordingly, also 
 generate outputs.
 
 We propose here a library dealing with extended hierarchical state transducers, i.e. a state machine
@@ -58,3 +58,16 @@ statechart. We made the decision to discard any concurrency mechanism and broadc
  pub/sub mechanism. To think about.
 - Ramda could easily be removed as a dependency - only using always, clone, keys 
 - any ideas? Post an issue!
+
+# Definitions
+DEFINITION 2.1 A sequential machine M is an algebraic system
+defined as follows: $M = (I, S, O, ~, ~)$, where:
+
+- $I$ - a finite non-empty set of inputs,
+- $S$ - a finite non-empty set of internal states,
+- $O$ - a finite set of outputs,
+- $\delta$ - the next-state function: $\delta : SxI \rightarrow S$,
+- $\lambda$ - the output function, ~: SxI -7 0 (a Mea~y machine), or ~: S -7 0 (a Moore machine).
+
+When an output set 0 and the output function ~ are not defined,
+the sequential machine M = (I, S, ~) is called a state machine. 
