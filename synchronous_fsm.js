@@ -1,3 +1,4 @@
+// DOC
 // CONTRACT : no transition from the history state (history state is only a target state)
 // CONTRACT : init events only acceptable in nesting state (aka grouping state)
 // NOTE : enforced via in_auto_state only true for grouping state
@@ -11,9 +12,7 @@
 // break out of it, maybe put a guard that if we remain in the same state for X steps,
 // transition automatically (to error or else)
 
-import * as Rx from "rx"
-import { clone } from "ramda"
-import * as jsonpatch from "fast-json-patch"
+import { applyPatch } from "fast-json-patch"
 
 // Error messages
 const CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE =
@@ -67,8 +66,6 @@ export const default_action_result = {
   output: NO_OUTPUT
 };
 
-export function default_subject_factory() {return new Rx.Subject()};
-
 function wrap(str) { return ['-', str, '-'].join(""); }
 
 /**
@@ -81,7 +78,7 @@ function applyUpdateOperations(/*OUT*/model, modelUpdateOperations) {
   assertContract(isArrayUpdateOperations, [modelUpdateOperations],
     `applyUpdateOperations : ${CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE}`);
 
-  jsonpatch.apply(model, modelUpdateOperations);
+  applyPatch(model, modelUpdateOperations, true, false);
   return model;
 }
 
@@ -291,8 +288,9 @@ function create_state_machine(fsmDef, settings) {
 
   // This will be the model object which will be updated by all actions and on which conditions
   // will be evaluated It is safely contained in a closure so it cannot be accessed in any way
-  // outside the state machine
-  let model = clone(model_initial);
+  // outside the state machine. Note also that the model is only modified through JSON patch operations which create
+  // a new model every time. There is hence no need to do any cloning.
+  let model = model_initial;
   let is_init_state = {}; // {Object<state_name,boolean>}, allows to know whether a state has a
   // init transition defined
   let is_auto_state = {}; // {Object<state_name,boolean>}, allows to know whether a state has an
