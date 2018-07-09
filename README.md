@@ -2,8 +2,10 @@
 There are numerous computations which can be described by a parameterizable set of 
  rules, coalescing around a fixed set of control states, and matching an output to an input depending on past inputs : 
 
-- An user interface [can be seen as a state transducer](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata), translating a user input into a user action,
- while modifying its internal state according to a predefined set of rules. 
+- An user interface [can be seen as a state transducer](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata), translating a user 
+input into a user action on the interfaced systems,
+ while modifying the user interface's internal state according to a predefined set of 
+ rules. 
 - Another particularly interesting field of application is [model-based testing, and test input 
 generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf).
 - Decision-making in game's AI is amenable to modelization by a fixed logic encompassing a fixed 
