@@ -52,3 +52,9 @@ statechart. We made the decision to discard any concurrency mechanism and broadc
 # Tests
 
 # References
+
+# Possible improvements
+- Rxjs is a dependency... only needed for pub/sub, it could possibly be switched out to a minimal
+ pub/sub mechanism. To think about.
+- Ramda could easily be removed as a dependency - only using always, clone, keys 
+- any ideas? Post an issue!
