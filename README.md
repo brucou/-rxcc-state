@@ -1,15 +1,34 @@
 # Motivation
-There are numerous computations which can be described by a fixed set of 
- rules coalescing around a fixed set of control states, and matching an output to an input, 
- depending on past inputs : 
+There are numerous computations which can be described by a parameterizable set of 
+ rules, coalescing around a fixed set of control states, and matching an output to an input depending on past inputs : 
 
 - An user interface [can be seen as a state transducer](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata), translating a user input into a user action,
  while modifying its internal state according to a predefined set of rules. 
-- A particularly interesting field of application is [model-based testing, and test input generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf).
+- Another particularly interesting field of application is [model-based testing, and test input 
+generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf).
+- Decision-making in game's AI is amenable to modelization by a fixed logic encompassing a fixed 
+set of conditions and game agents' states 
 
-# What is an Extended Hierarchical State Transducer ? 
-An [automaton](https://en.wikipedia.org/wiki/Automata_theory) is a construct made of states designed to determine if the input should be accepted 
-or rejected. It looks a lot like a basic board game where each space on the board represents a state. Each state has information about what to do when an input is received by the machine (again, rather like what to do when you land on the Jail spot in a popular board game). As the machine receives a new input, it looks at the state and picks a new spot based on the information on what to do when it receives that input at that state. When there are no more inputs, the automaton stops and the space it is on when it completes determines whether the automaton accepts or rejects that particular set of inputs.
+Such computations can often be modelized through an Extended Hierarchical State Transducer in a 
+way that :
+
+- is economical (complexity of the transducer proportional to complexity of the 
+computation)
+- is easy to reason about (he transducer can be visually represented, supporting both 
+internal and external communication, and design specification and documentation)
+- supports step-wise refinement and iterative development (control states can be refined into a 
+hierarchy of substates)
+
+We have so far successfully used this library :
+
+- in [multi-steps workflows](https://github.com/brucou/component-combinators/tree/master/examples/volunteerApplication), a constant feature of enterprise software today
+- for ['smart' synchronous streams](https://github.com/brucou/partial-synchronous-streams)
+- to implement ad-hoc cross-domain communication protocols
+
+# So what is an Extended Hierarchical State Transducer ? 
+Let's build the concept progressively.
+
+An [automaton](https://en.wikipedia.org/wiki/Automata_theory) is a construct made of states designed to determine if the input should be accepted or rejected. It looks a lot like a basic board game where each space on the board represents a state. Each state has information about what to do when an input is received by the machine (again, rather like what to do when you land on the Jail spot in a popular board game). As the machine receives a new input, it looks at the state and picks a new spot based on the information on what to do when it receives that input at that state. When there are no more inputs, the automaton stops and the space it is on when it completes determines whether the automaton accepts or rejects that particular set of inputs.
 
 State machines and automata are essentially interchangeable terms. Automata is the favored terms 
 when connoting automata theory, while state machines is more often used in the context of the 
@@ -20,7 +39,9 @@ and instructions governing the update of the mentiond set of variables. To any e
 machines it corresponds a standard state machine. An extended state machine allows however to 
 describe succintly a class of standard state machines, parameterized by its set of variables.
 
-A hierarchical state machine is a state machine whose states can be themselves state machines.
+A hierarchical state machine is a state machine whose states can be themselves state machines. 
+Thus instead of having a set of states as in standard state machines, we have a hierarchy (tree) of 
+states describing the system under study.
 
 A [state transducer](https://en.wikipedia.org/wiki/Finite-state_transducer) is a sequential 
 machine, which in addition to accepting inputs, and modifying its state accordingly, also 
@@ -36,7 +57,8 @@ Note that if we add concurrency and messaging to extended hierarchical state mac
 statechart. We made the decision to discard any concurrency mechanism and broadcast mechanism for
  two reasons :
  
- - this is the weak point of statecharts, specially when it comes to readability, and semantics 
+ - these are arguably the weak point of statecharts, specially when it comes to readability, and 
+ semantics 
  - we want to give the library user the possibility to choose its own concurrency and 
  messaging semantics (sync/async, queued/unqueued, peer-to-peer/publish-subscribe, 
  preemption/cooperation, etc.)

@@ -1,18 +1,3 @@
-// TODO : the latest version of synchronous_fsm should go back to rx-component-combinators!!
-// TODO : document code with jsdoc, in particular @modify tags for side-effectful functions
-// TODO : document the library
-
-// TODO : entry and exit actions??
-// TODO : Add termination connector (T)?
-// TODO : DSL TODO : write program which takes a transition specifications and draw a nice graph
-// out of it with yed or else
-// TODO : think about the concurrent states (AND states)
-// TODO : cd player demo
-// - TEST CASE no history (last seen state is null...)
-// - add the view (template + enabling disabling of buttons in function of state)
-// - add the tooltips
-
-
 // CONTRACT : no transition from the history state (history state is only a target state)
 // CONTRACT : init events only acceptable in nesting state (aka grouping state)
 // NOTE : enforced via in_auto_state only true for grouping state
@@ -27,11 +12,46 @@
 // transition automatically (to error or else)
 
 import * as Rx from "rx"
-import { always, clone, keys } from "ramda"
+import { clone } from "ramda"
 import * as jsonpatch from "fast-json-patch"
-import { assertContract } from "./utils"
-import { isArrayUpdateOperations } from "./contracts"
-import { CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE } from "./properties"
+
+// Error messages
+const CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE =
+  `Model update function must return valid update operations!`;
+
+// Ramda fns
+function always(x) {return x}
+
+function keys(obj) {return Object.keys(obj)}
+
+// Contracts
+function assertContract(contractFn, contractArgs, errorMessage) {
+  const boolOrError = contractFn.apply(null, contractArgs)
+  const isPredicateSatisfied = isBoolean(boolOrError) && boolOrError;
+
+  if (!isPredicateSatisfied) {
+    throw `assertContract: fails contract ${contractFn.name}\n${errorMessage}\n ${boolOrError}`
+  }
+  return true
+}
+
+function isBoolean(obj) {return typeof(obj) === 'boolean'}
+
+function isUpdateOperation(obj) {
+  // return (typeof(obj)==='object' && Object.keys(obj).length === 0) ||
+  (
+    ['add', 'replace', 'move', 'test', 'remove', 'copy'].some(op => obj.op === op) &&
+    typeof(obj.path) === 'string'
+  )
+}
+
+function isEmptyArray(obj) {return Array.isArray(obj) && obj.length === 0}
+
+function isArrayOf(predicate) {return obj => Array.isArray(obj) && obj.every(predicate)}
+
+function isArrayUpdateOperations(obj) {
+  return isEmptyArray(obj) || isArrayOf(isUpdateOperation)(obj)
+}
 
 // CONSTANTS
 export const INITIAL_STATE_NAME = 'nok';
@@ -40,16 +60,16 @@ export const AUTO_EVENT = 'auto';
 const STATE_PROTOTYPE_NAME = 'State'; // !!must be the function name for the constructor State,
                                       // i.e. State
 export const NO_MODEL_UPDATE = [];
+// NOTE : this really cannot be anything else than a falsy value, beware
 export const NO_OUTPUT = null;
 export const default_action_result = {
   model_update: NO_MODEL_UPDATE,
   output: NO_OUTPUT
 };
-export function default_emitter_factory() {return new Rx.Subject()};
 
-function wrap(str) {
-  return ['-', str, '-'].join("");
-}
+export function default_subject_factory() {return new Rx.Subject()};
+
+function wrap(str) { return ['-', str, '-'].join(""); }
 
 /**
  *
@@ -63,19 +83,6 @@ function applyUpdateOperations(/*OUT*/model, modelUpdateOperations) {
 
   jsonpatch.apply(model, modelUpdateOperations);
   return model;
-}
-
-function make_action_DSL(action_list) {
-  // action_list is an array whose entries are actions (functions)
-  // Returns :
-  // [function my_name(){}] -> action_enum : {my_name: 'my_name'}
-  // [function my_name(){}] -> action_hash : {my_name: 0}
-  return action_list.reduce(function build_action_enum(action_struct, action_fn, index) {
-    const action_name = action_fn.name;
-    action_struct.action_enum[action_name] = action_name;
-    action_struct.action_hash[action_name] = action_fn;
-    return action_struct;
-  }, { action_enum: {}, action_hash: {} });
 }
 
 /**
@@ -254,32 +261,33 @@ function build_state_enum(states) {
   return states_enum;
 }
 
-
 /**
- * TODO : document transition mechanism
+ * TODO : DOC transition mechanism
  * - transition format
  *   - events : if not present, then actions become automatic
+ *   // DOC : only document the array : always array even if only one condition
  *   - condition(s) : if several, pass them in an array (field `conditions`), the order of the
  * array is the order of applying the conditions. When a single condition (field `condition`) When
  * the first is found true, the sequence of condition checking stops there
- *   - action : function (model, event_data) : model_prime
+ *   - action : function (model, event_data, settings) : {output, update_state}
  *   - from : state from which the described transition operates
  *   - to : target state for the described transition
- * @param fsmDef
- * @param settings
+ * @param {FSM_Def} fsmDef
+ * @param {{subject_factory: Function, merge: Function}} settings Contains the subject factory as mandatory settings,
+ * and any other. The `merge` settings is mandatory only when using th streaming state machine functionality
+ * extra settings the API user wants to make available in state machine's scope
  * @returns {{yield : Function, start: Function}}
  */
 function create_state_machine(fsmDef, settings) {
   const { control_states, events, transitions, model_initial } = fsmDef;
-  const event_emitter_factory = ('event_emitter_factory' in settings)
-    ? settings.event_emitter_factory
-    : default_emitter_factory;
+  const subject_factory = settings && settings.subject_factory;
+  if (!subject_factory) throw `create_state_machine : cannot find a subject factory (use Rxjs subject??)`
 
   const _control_states = build_state_enum(control_states);
   const _events = build_event_enum(events);
 
   // Create the nested hierarchical
-  const hash_states_struct = build_nested_state_structure(_control_states, event_emitter_factory);
+  const hash_states_struct = build_nested_state_structure(_control_states, subject_factory);
 
   // This will be the model object which will be updated by all actions and on which conditions
   // will be evaluated It is safely contained in a closure so it cannot be accessed in any way
@@ -522,6 +530,90 @@ function create_state_machine(fsmDef, settings) {
 
 export {
   create_state_machine,
-  build_state_enum,
-  build_event_enum,
+  makeStreamingStateMachine
 }
+
+/**
+ *
+ * @param {FSM_Def} fsmDef
+ * @param {{subject_factory: Function, merge: Function}} settings Contains the `merge` property as mandatory
+ * settings. That merge function must take an array of observables and return an observable.
+ * Otherwise can also hold extra settings the API user wants to make available in state machine's scope
+ * @returns {function(Object<String, Rx.Observable>): *}
+ */
+function makeStreamingStateMachine(fsmDef, settings) {
+  const fsm = create_state_machine(fsmDef, settings);
+  const merge = settings && settings.merge;
+  if (!merge) throw `makeStreamingStateMachine : could not find an observable merge function! use Rx.Observable.merge??`
+
+  /**
+   * @param {Object.<Event_Label, Rx.Observable>} events A mapping of event labels to the corresponding event sources
+   * @returns {Rx.Observable} Returns an observable containing the actions emitted by the state machine in response
+   * to the specified input events
+   */
+  const computeActions = function computeActions(events) {
+    return merge(
+      keys(events).map(eventLabel => {
+        const eventSource$ = events[eventLabel];
+        return eventSource$.map(eventData => fsm.yield({ [eventLabel]: eventData }))
+      })
+    )
+      .filter(Boolean)
+  }
+
+  return computeActions
+}
+
+// TODO : explain hierarchy, initial events, auto events, and other contracts
+// TODO : document the merge settings (+filter necessary on prototye)
+/**
+ * @typedef {Object} FSM_Def
+ * @property {Object.<Control_State, *>} control_states Object whose every key is a control state admitted by the
+ * specified state machine
+ * @property {Array<EventLabel>} events
+ * @property {Array<Transition>} transitions
+ * @property {*} model_initial
+ */
+/**
+ * @typedef {String} Event_Label
+ */
+/**
+ * @typedef {String} Control_State Name of the control state
+ */
+/**
+ * @typedef {Inconditional_Transition | Conditional_Transition} Transition
+ */
+/**
+ * @typedef {function(model:*, event_data:*, settings:FSM_Settings) : Actions} ActionFactory
+ */
+/**
+ * @typedef {{model_update : Array<JSON_Patch_Operation>, output : *}} Actions The actions to be performed by the
+ * state machine in response to a transition. `model_update` represents the state update for the variables
+ * of the extended state machine. `output` represents the output of the state machine passed to the API caller.
+ */
+/**
+ * @typedef {{from: Control_State, to:Control_State, event:Event_Label, action : ActionFactory}}
+ *   Inconditional_Transition encodes transition with no guards attached. Every time the specified event occurs, and
+ *   the machine is in the specified state, it will transition to the target control state, and invoke the action
+ *   returned by the action factory
+ */
+/**
+ * @typedef {{from : Control_State, conditions : Array<Condition>}} Conditional_Transition Transition for the
+ * specified state is contingent to some guards being passed. Those guards are defined as an array.
+ *
+ */
+/**
+ * @typedef {{condition : Predicate, to : Control_State, action : ActionFactory}} Condition On satisfying the
+ * specified predicate, the received event data will trigger the transition to the specified target control state
+ * and invoke the action created by the specified action factory, leading to an update of the internal state of the
+ * extended state machine and possibly an output to the state machine client.
+ *
+ */
+/**
+ * @typedef {function (*=) : Boolean} Predicate
+ *
+ */
+/**
+ * @typedef {*} FSM_Settings
+ *
+ */
