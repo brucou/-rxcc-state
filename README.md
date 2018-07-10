@@ -100,14 +100,16 @@ documentation relies on all previously introduced concepts.
 In this section, we seek to define quickly the meaning of the key terms which will be commonly 
 used when referring to state machines.
 
-TODO : include some drawing of a state machine with a hierarchy of states and callouts for 
-guards, control states, actions, output, extended state.
-TODO : favor two separate drawings
-
 As a supporting illustration for the basic terminology, we introduce the following state 
 transducer representation, specifying an user interface for a multi-steps application process.
 
 ![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
+
+As a supporting illustration for the terminology linked to hierarchical states, we introduce the 
+following illustration.
+
+TODO : include some drawing of a state machine with a hierarchy of states and callouts for 
+guards, control states, actions, output, extended state.
 
 <dl>
   <dt>control state</dt>
@@ -234,8 +236,27 @@ transducer representation, specifying an user interface for a multi-steps applic
   </dd>
 </dl>
 
-## `create_state_machine :: FSM_Def -> FSM`
+### Transducer behaviour
+We give here a quick summary of the operational semantics for the state transducer :
 
+- the machine is configured with a set of states, an initial extended state, transitions, guards, action factories, and user settings
+- the machine has a fixed initial control state prior to starting
+- starting the machine (`.start()`) triggers the internal INIT event which advances the state 
+machine out of the initial control state towards the relevant user-configured control state.
+- **TODO**
+
+### Contracts
+- The machine cannot stay blocked in the initial control state. This means that at least one 
+transition must be configured and be executed between the initial control state and another state
+. This is turn means :
+  - at least one non-reserved control state must be configured
+  - at least one transition out of the initial control state must be configured
+  - of all guards for such transitions, if any, at least one must be fulfilled to enable a 
+  transition away from the initial control state
+- **TODO**
+
+## `create_state_machine :: FSM_Def -> FSM`
+- **TODO**
 
 # Example
 
