@@ -84,7 +84,9 @@ returns a state transducer which :
 The state transducer is not, in general, a pure function of its inputs. However a given output of
  the transducer depends exclusively on the sequence of inputs it has received so far. This means 
  that it is possible to associate to a state transducer another function which takes a sequence of
-  inputs into a sequence of outputs, in a way that that function is pure. We provide a way to 
+  inputs into a sequence of outputs, in a way that that function is pure. 
+  
+  We provide a way to 
   construct such a function with the `makeStreamingStateMachine` factory to create a stream 
   transducer, which translates an input stream into an output stream.
 
