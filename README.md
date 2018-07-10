@@ -43,7 +43,7 @@ when connoting automata theory, while state machines is more often used in the c
 actual or practical usage of automata.
 
 An extended state machine is a state machine endowed with a set of variables, predicates (guards)
-and instructions governing the update of the mentiond set of variables. To any extended state 
+and instructions governing the update of the mentioned set of variables. To any extended state 
 machines it corresponds a standard state machine. An extended state machine allows however to 
 describe succintly a class of standard state machines, parameterized by its set of variables.
 
