@@ -206,7 +206,7 @@ guards, control states, actions, output, extended state.
   </dd>
   <dt>atomic state</dt>
   <dd>An atomic state is a control state which is not itself a state machine. In other words, it 
-  is a *normal* control state.
+  is a <em>normal</em> control state.
   </dd>
   <dt>transient state</dt>
   <dd>transient states are control states which are ephemeral. They are meant to be immediately 
@@ -216,7 +216,7 @@ guards, control states, actions, output, extended state.
   </dd>
   <dt>terminal state</dt>
   <dd>the terminal state is a control state from which the machine is not meant to transition 
-  from. This correspond to a designed or anticipated end of run of the state machine.
+  from. This corresponds to a designed or anticipated end of run of the state machine.
   <dt>history state</dt>
   <dd>Semantics for the history state may vary according to the intended application of 
   hierarchical automata. In our restrictive context, the history state allows to transition back 
