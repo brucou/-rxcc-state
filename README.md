@@ -1,18 +1,18 @@
 # Motivation
-There are numerous computations which can be described by a parameterizable set of 
- rules, coalescing around a fixed set of control states, and matching an output to an input depending on past inputs : 
+There are numerous computations which can be described advantageously[^1] by a parameterizable set
+ of rules, coalescing around a fixed set of control states, and matching an output to an input 
+ depending on current and past inputs : 
 
 - An user interface [can be seen as a state transducer](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata), translating a user 
-input into a user action on the interfaced systems,
- while modifying the user interface's internal state according to a predefined set of 
- rules. 
+input into a user action on the interfaced systems, while modifying the user interface's 
+internal state according to a predefined set of rules. 
 - Another particularly interesting field of application is [model-based testing, and test input 
 generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf).
 - Decision-making in game's AI is amenable to modelization by a fixed logic encompassing a fixed 
-set of conditions and game agents' states 
+set of conditions and game agents' state
 
-Such computations can often be modelized through an Extended Hierarchical State Transducer in a 
-way that :
+Such computations can often enough be modelized through an Extended Hierarchical State Transducer 
+in a way that :
 
 - is economical (complexity of the transducer proportional to complexity of the 
 computation)
@@ -21,11 +21,18 @@ internal and external communication, and design specification and documentation)
 - supports step-wise refinement and iterative development (control states can be refined into a 
 hierarchy of substates)
 
-We have so far successfully used this library :
+Concretely, we have so far successfully used this library :
 
 - in [multi-steps workflows](https://github.com/brucou/component-combinators/tree/master/examples/volunteerApplication), a constant feature of enterprise software today
-- for ['smart' synchronous streams](https://github.com/brucou/partial-synchronous-streams)
+- for ['smart' synchronous streams](https://github.com/brucou/partial-synchronous-streams), which
+ avoid useless (re-)computations
 - to implement ad-hoc cross-domain communication protocols
+
+[^1]: In fact, a computation can be understood as [precisely the result of a machine run]
+(https://en.wikipedia.org/wiki/Computability_theory). Some formalization of the matching 
+computing machine however can be useless in practice, which is why we use the term advantageously
+ to indicate those computations where a formalization of the computing machine brings desired 
+ benefits.
 
 # So what is an Extended Hierarchical State Transducer ? 
 Let's build the concept progressively.
@@ -62,8 +69,8 @@ Note that if we add concurrency and messaging (broadcast) to extended hierarchic
  - these are arguably the weak point of statecharts, specially when it comes to readability, and 
  semantics 
  - we want to give the library user the possibility to choose its own concurrency and 
- messaging semantics (sync/async, queued/unqueued, peer-to-peer/publish-subscribe, 
- preemption/cooperation, etc.)
+ messaging semantics (sync/async, deterministic/non-deterministic, queued/unqueued, 
+ peer-to-peer/publish-subscribe, preemption/cooperation, etc.)
 
 # Install
 
