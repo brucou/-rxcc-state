@@ -28,8 +28,7 @@ Concretely, we have so far successfully used this library :
  avoid useless (re-)computations
 - to implement ad-hoc cross-domain communication protocols
 
-[^1]: In fact, a computation can be understood as [precisely the result of a machine run]
-(https://en.wikipedia.org/wiki/Computability_theory). Some formalization of the matching 
+[^1]: In fact, a computation can be understood as [precisely the result of a machine run](https://en.wikipedia.org/wiki/Computability_theory). Some formalization of the matching 
 computing machine however can be useless in practice, which is why we use the term advantageously
  to indicate those computations where a formalization of the computing machine brings desired 
  benefits.
