@@ -104,6 +104,9 @@ TODO : include some drawing of a state machine with a hierarchy of states and ca
 guards, control states, actions, output, extended state.
 TODO : favor two separate drawings
 
+As a supporting illustration for the basic terminology, we introduce the following state 
+transducer representation, specifying an user interface for a multi-steps application process.
+
 ![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
 
 <dl>
@@ -116,7 +119,9 @@ TODO : favor two separate drawings
   modified on transitioning to another state. That piece of internal state **must** be 
   initialized upon creating the state machine. In this context, the extended state will simply 
   take the form of a regular object. The shape of the extended state is largely 
-  application-specific.</dd>
+  application-specific. In the context of our multi-steps workflow, extended state could for 
+  instance be the current application data, which varies in fonction of the state of the 
+  application.</dd>
   <dt>input</dt>
   <dd>In the context of our library, we will use interchangeable input for events. An automata 
   receives inputs and generated outputs. However, as a key intended use case for this
