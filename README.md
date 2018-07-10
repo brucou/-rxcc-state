@@ -66,7 +66,7 @@ Note that if we add concurrency and messaging (broadcast) to extended hierarchic
  two reasons :
  
  - these are arguably the weak point of statecharts, specially when it comes to readability, and 
- semantics 
+ coherent semantics 
  - we want to give the library user the possibility to choose its own concurrency and 
  messaging semantics (sync/async, deterministic/non-deterministic, queued/unqueued, 
  peer-to-peer/publish-subscribe, preemption/cooperation, etc.)
@@ -82,9 +82,6 @@ Note that if we add concurrency and messaging (broadcast) to extended hierarchic
 # References
 
 # Possible improvements
-- Rxjs is a dependency... only needed for pub/sub, it could possibly be switched out to a minimal
- pub/sub mechanism. To think about.
-- Ramda could easily be removed as a dependency - only using always, clone, keys 
 - any ideas? Post an issue!
 
 # Definitions
