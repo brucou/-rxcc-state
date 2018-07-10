@@ -16,8 +16,8 @@ in a way that :
 
 - is economical (complexity of the transducer proportional to complexity of the 
 computation)
-- is easy to reason about (he transducer can be visually represented, supporting both 
-internal and external communication, and design specification and documentation)
+- is easy to reason about and communicate (the transducer can be visually represented, supporting 
+both internal and external communication, and design specification and documentation)
 - supports step-wise refinement and iterative development (control states can be refined into a 
 hierarchy of substates)
 
@@ -52,7 +52,7 @@ Thus instead of having a set of states as in standard state machines, we have a 
 states describing the system under study.
 
 A [state transducer](https://en.wikipedia.org/wiki/Finite-state_transducer) is a state 
-machine, which in addition to accepting inputs, and modifying its state accordingly, also 
+machine, which in addition to accepting inputs, and modifying its state accordingly, may also 
 generate outputs.
 
 We propose here a library dealing with extended hierarchical state transducers, i.e. a state machine
@@ -74,6 +74,56 @@ Note that if we add concurrency and messaging (broadcast) to extended hierarchic
 # Install
 
 # API
+## API summary
+Our state transducer will be created by the factory function `create_state_machine`, which 
+returns a state transducer which :
+
+- must be started manually (with `.start()`), and configured with an initial state 
+- will compute an output for any input that is sent to it (with `.yield(input)`)
+
+The state transducer is not, in general, a pure function of its inputs. However a given output of
+ the transducer depends exclusively on the sequence of inputs it has received so far. This means 
+ that it is possible to associate to a state transducer another function which takes a sequence of
+  inputs into a sequence of outputs, in a way that that function is pure. We provide a way to 
+  construct such a function with the `makeStreamingStateMachine` factory to create a stream 
+  transducer, which translates an input stream into an output stream.
+
+## General concepts
+We precise here the vocabulary which will be used throughout the documentation. We then describe 
+how the behaviour of a transducer relates to its configuration. In particular we detail the 
+concepts and semantics associated to hierarchical states. Finally we present our API whose 
+documentation relies on all previously introduced concepts.
+
+### Terminology
+TODO : include some drawing of a state machine with a hierarchy of states and callouts for 
+guards, control states, actions, output, extended state.
+TODO : favor two separate drawings
+![Imgur](https://i.imgur.com/byRSrGH.png)
+
+- control state
+- extended state
+- external event
+- internal event
+- initial event
+- guard
+- predicate
+- action factory
+- output
+- transition
+- conditional transition
+- automatic transition
+- self transition
+- transient state
+- composite state
+- substate
+- atomic state
+- history state
+- entry point
+- exit point
+- terminal state
+
+## `create_state_machine :: FSM_Def -> FSM`
+
 
 # Example
 
