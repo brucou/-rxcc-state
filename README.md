@@ -95,10 +95,20 @@ concepts and semantics associated to hierarchical states. Finally we present our
 documentation relies on all previously introduced concepts.
 
 ### Terminology
+In this section, we seek to define quickly the meaning of the key terms which will be commonly 
+used when referring to state machines.
+
 TODO : include some drawing of a state machine with a hierarchy of states and callouts for 
 guards, control states, actions, output, extended state.
 TODO : favor two separate drawings
 ![Imgur](https://i.imgur.com/byRSrGH.png)
+
+<dl>
+  <dt>control state</dt>
+  <dd>The new version of this product costs significantly less than the previous one!</dd>
+  <dt>extended state</dt>
+  <dd>We've changed the product so that it's much easier to use!</dd>
+</dl>
 
 - control state
 - extended state
