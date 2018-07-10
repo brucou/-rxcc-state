@@ -103,11 +103,74 @@ guards, control states, actions, output, extended state.
 TODO : favor two separate drawings
 ![Imgur](https://i.imgur.com/byRSrGH.png)
 
+A state is a description of the status of a system that is waiting to execute a transition. A transition is a set of actions to be executed when a condition is fulfilled or when an event is received. For example, when using an audio system to listen to the radio (the system is in the "radio" state), receiving a "next" stimulus results in moving to the next station. When the system is in the "CD" state, the "next" stimulus results in moving to the next track. Identical stimuli trigger different actions depending on the current state.
+
+In some finite-state machine representations, it is also possible to associate actions with a state:
+
+an entry action: performed when entering the state, and
+an exit action: performed when exiting the state.
+
 <dl>
   <dt>control state</dt>
-  <dd>The new version of this product costs significantly less than the previous one!</dd>
+  <dd>Control states, in the context of an extended state machine is a piece of the internal state
+   of the state machine, which serves to determine the transitions to trigger in response to 
+   events. Transitions only occur between control states. Cf. Illustration above. </dd>
   <dt>extended state</dt>
-  <dd>We've changed the product so that it's much easier to use!</dd>
+  <dd>We refer by extended state the piece of internal state of the state machine which can be 
+  modified on transitioning to another state. That piece of internal state **must** be 
+  initialized upon creating the state machine. In this context, the extended state will simply 
+  take the form of a regular object. The shape of the extended state is largely 
+  application-specific.</dd>
+  <dt>external event</dt>
+  <dd>External events are events which are external and uncoupled to the state machine at hand. 
+  Such events could be, in the context of an user interface, a user click on a button.
+  </dd>
+  <dt>internal event</dt>
+  <dd>Internal events are events coupled to a specific state machine. Depending on the semantics 
+  of a particular state machine, internal events may be generated to realize those semantics. In 
+  the context of our library, we only generate automatic events to trigger automatic transitions 
+  ; INIT events to jump start a state machine
+  </dd>
+  <dt>initial event</dt>
+  <dd>In the context of our library, the initial event is fired automatically and only upon 
+  starting a state machine. The initial event can be used to configure the initial 
+  machine transition, out from the initial control state.
+  </dd>
+  <dt>automatic event</dt>
+  <dd>This is an internally triggered event which serves to triggers transitions from control 
+  states for which no triggering events are configured. Such transitions are called automatic 
+  transitions. Not firing an automatic event would mean that the state machine would be forever  
+  stuck in the current control state.
+  </dd>
+  <dt>transition</dt>
+  <dd>Transitions are changes in tne control state of the state machine under study. Transitions 
+  can be configured to be taken only when predefined conditions are fulfilled (guards). 
+  Transitions can be triggered by an event, or be automatic when no triggering event is specified.
+  </dd>
+  <dt>automatic transition</dt>
+  <dd>Transitions between control states can be automatically evaluated if there are no 
+  triggering events configured. The term is a bit confusing however, as it is possible in theory 
+  that no transition is actually executed, if none of the configured guard is fulfilled. We 
+  forbid this case by conract, as failing to satisfy any such guard would mean that 
+   the machine never progress to another state!
+  </dd>
+  <dt>self transition</dt>
+  <dd>Transitions can also occur with origin and destination the same conrol state. When 
+  that happens, the transition is called a self transition.
+  </dd>
+  <dt>transition evaluation</dt>
+  <dd>Goven a machine in a given control state, and an external event occuring, the transitions 
+  configured for that event are evaluated. This evaluation ends up in identifying a valid 
+  transition, which is executed (e.g. taken) leading to a change in the current control state ; 
+  or with no satisfying transition in which case the machine remains in the same control state, 
+  with the same extended state.
+  </dd>
+  <dt>guards</dt>
+  <dd>Guards associated to a transition are predicates which must be fulfilled for that 
+  transition to be executed. Guards play an important role in connecting extended state to the  
+  control flow for the computation under specification. As a matter of fact, in our context, guards 
+  are pure fonctions of both the occurring event and extended state.
+  </dd>
 </dl>
 
 - control state
