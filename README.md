@@ -129,8 +129,10 @@ used when referring to state machines.
 As a supporting illustration for the terminology linked to hierarchical states, we introduce the 
 following illustration.
 
-TODO : include some drawing of a state machine with a hierarchy of states and callouts for 
+**TODO** : include some drawing of a state machine with a hierarchy of states and callouts for 
 guards, control states, actions, output, extended state.
+
+![cd player state chart](http://i.imgur.com/ygsOVi9.jpg)
 
 <dl>
   <dt>control state</dt>
