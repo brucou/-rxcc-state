@@ -91,9 +91,14 @@ The state transducer is not, in general, a pure function of its inputs. However 
   transducer, which translates an input stream into an output stream.
 
 ## General concepts
-To help illustrate the concepts, and the terminology, we will use a real use case of state machine.
- We will subsequently precise here the vocabulary which will be used throughout the documentation
- . We then describe how the behaviour of a transducer relates to its configuration. In particular
+To help illustrate the concepts, and the terminology, we will use two examples, featuring 
+basic and advanced features on the hierarchical state transducer model : 
+
+- a real use case of state machine applied to a web application user interface
+- the specification of the behaviour for a cd player
+
+We will subsequently precise here the vocabulary which will be used throughout the documentation.
+  We then describe how the behaviour of a transducer relates to its configuration. In particular
   we detail the concepts and semantics associated to hierarchical states. Finally we present our
    API whose documentation relies on all previously introduced concepts.
 
@@ -122,6 +127,14 @@ itself (it performs no effects), it computes which screen to display according t
  
 ![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
 
+### CD drawer example
+This example is taken from Ian Horrock's seminal book on statecharts and is the specification of
+ a CD player. It features advances characteristics of hierarchical state machines, including 
+ history states, composite states, and entry points.
+ 
+![cd player state chart](http://i.imgur.com/ygsOVi9.jpg)
+
+
 ### Terminology
 In this section, we seek to define quickly the meaning of the key terms which will be commonly 
 used when referring to state machines.
@@ -131,8 +144,6 @@ following illustration.
 
 **TODO** : include some drawing of a state machine with a hierarchy of states and callouts for 
 guards, control states, actions, output, extended state.
-
-![cd player state chart](http://i.imgur.com/ygsOVi9.jpg)
 
 <dl>
   <dt>control state</dt>
@@ -224,7 +235,7 @@ guards, control states, actions, output, extended state.
   <dt>compound state</dt>
   <dd>exact synonim of *composite state*
   </dd>
-  <dt>substate</dt>
+  <dt>nested state</dt>
   <dd>A control state which is part of a composite state
   </dd>
   <dt>atomic state</dt>
@@ -268,6 +279,11 @@ We give here a quick summary of the operational semantics for the state transduc
 machine out of the initial control state towards the relevant user-configured control state.
 - **TODO**
 
+### Example run
+To illustrate the previously described transducer semantics, let's run the CD drawer example.
+
+**TODO**
+ 
 ### Contracts
 - The machine cannot stay blocked in the initial control state. This means that at least one 
 transition must be configured and be executed between the initial control state and another state
