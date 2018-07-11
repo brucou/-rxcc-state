@@ -162,9 +162,9 @@ guards, control states, actions, output, extended state.
   ; INIT events to jump start a state machine
   </dd>
   <dt>initial event</dt>
-  <dd>In the context of our library, the initial event (**INIT** in the base example illustration)
-   is fired automatically and only upon starting a state machine. The initial event can be used to 
-  configure the initial machine transition, out from the initial control state.
+  <dd>In the context of our library, the initial event (<b>INIT</b> in the base example 
+  illustration) is fired automatically and only upon starting a state machine. The initial event 
+  can be used to configure the initial machine transition, out from the initial control state.
   </dd>
   <dt>automatic event</dt>
   <dd>This is an internally triggered event which serves to triggers transitions from control 
