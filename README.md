@@ -139,11 +139,7 @@ This example is taken from Ian Horrock's seminal book on statecharts and is the 
 In this section, we seek to define quickly the meaning of the key terms which will be commonly 
 used when referring to state machines.
 
-As a supporting illustration for the terminology linked to hierarchical states, we introduce the 
-following illustration.
-
-**TODO** : include some drawing of a state machine with a hierarchy of states and callouts for 
-guards, control states, actions, output, extended state.
+**TODO** : add references to the cd player graph to illustrate advanced terminology
 
 <dl>
   <dt>control state</dt>
