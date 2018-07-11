@@ -136,7 +136,7 @@ guards, control states, actions, output, extended state.
   <dt>control state</dt>
   <dd>Control states, in the context of an extended state machine is a piece of the internal state
    of the state machine, which serves to determine the transitions to trigger in response to 
-   events. Transitions only occur between control states. Cf. Illustration above. </dd>
+   events. Transitions only occur between control states. Cf. base example illustration. </dd>
   <dt>extended state</dt>
   <dd>We refer by extended state the piece of internal state of the state machine which can be 
   modified on transitioning to another state. That piece of internal state **must** be 
@@ -162,8 +162,8 @@ guards, control states, actions, output, extended state.
   ; INIT events to jump start a state machine
   </dd>
   <dt>initial event</dt>
-  <dd>In the context of our library, the initial event (**INIT** in the above illustration) is 
-  fired automatically and only upon starting a state machine. The initial event can be used to 
+  <dd>In the context of our library, the initial event (**INIT** in the base example illustration)
+   is fired automatically and only upon starting a state machine. The initial event can be used to 
   configure the initial machine transition, out from the initial control state.
   </dd>
   <dt>automatic event</dt>
@@ -278,8 +278,6 @@ transition must be configured and be executed between the initial control state 
 
 ## `create_state_machine :: FSM_Def -> FSM`
 - **TODO**
-
-# Example
 
 # Tests
 
