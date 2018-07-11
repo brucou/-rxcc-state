@@ -91,19 +91,39 @@ The state transducer is not, in general, a pure function of its inputs. However 
   transducer, which translates an input stream into an output stream.
 
 ## General concepts
-We precise here the vocabulary which will be used throughout the documentation. We then describe 
-how the behaviour of a transducer relates to its configuration. In particular we detail the 
-concepts and semantics associated to hierarchical states. Finally we present our API whose 
-documentation relies on all previously introduced concepts.
+To help illustrate the concepts, and the terminology, we will use a real use case of state machine.
+ We will subsequently precise here the vocabulary which will be used throughout the documentation
+ . We then describe how the behaviour of a transducer relates to its configuration. In particular
+  we detail the concepts and semantics associated to hierarchical states. Finally we present our
+   API whose documentation relies on all previously introduced concepts.
+
+mmmm the progression logic is somewhat deficient...
+
+### Base example
+This example is taken from an actual project in which this library was used. It will be used in 
+this paragraph to illustrate the core terminology defined in subsequent sections, and illustrate 
+somewhat abstract notions.
+
+This example deals with a typical multi-step application process, whose user interface is made of a 
+sequence of screens. In each screen, the user is required to introduce or review some 
+information, and navigate through the application process up to completion, by clicking on 
+buttons corresponding to the user decision. 
+
+That application process concretely consists of 5 screens whose flow is defined by the UX team as
+ follows :
+ 
+![User flow](https://github.com/brucou/component-combinators/raw/master/examples/volunteerApplication/assets/volunteerApplication/application%20process.png) 
+
+This in turn was turned into a state machine orchestrating the screens to display in 
+function of the user inputs. The machine does not display the screen itself (it performs no 
+effects), it computes which screen to display according to the sequence of inputs performed by 
+the user and its extended state (which includes here the state of the application process) :
+ 
+![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
 
 ### Terminology
 In this section, we seek to define quickly the meaning of the key terms which will be commonly 
 used when referring to state machines.
-
-As a supporting illustration for the basic terminology, we introduce the following state 
-transducer representation, specifying an user interface for a multi-steps application process.
-
-![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
 
 As a supporting illustration for the terminology linked to hierarchical states, we introduce the 
 following illustration.
@@ -122,7 +142,7 @@ guards, control states, actions, output, extended state.
   initialized upon creating the state machine. In this context, the extended state will simply 
   take the form of a regular object. The shape of the extended state is largely 
   application-specific. In the context of our multi-steps workflow, extended state could for 
-  instance be the current application data, which varies in fonction of the state of the 
+  instance be the current application data, which varies in function of the state of the 
   application.</dd>
   <dt>input</dt>
   <dd>In the context of our library, we will use interchangeable input for events. An automata 
@@ -178,7 +198,7 @@ guards, control states, actions, output, extended state.
   <dd>Guards associated to a transition are predicates which must be fulfilled for that 
   transition to be executed. Guards play an important role in connecting extended state to the  
   control flow for the computation under specification. As a matter of fact, in our context, guards 
-  are pure fonctions of both the occurring event and extended state.
+  are pure functions of both the occurring event and extended state.
   </dd>
   <dt>action factory</dt>
   <dd>This is a notion linked to our implementation. An action factory is a function which 
@@ -206,7 +226,7 @@ guards, control states, actions, output, extended state.
   </dd>
   <dt>atomic state</dt>
   <dd>An atomic state is a control state which is not itself a state machine. In other words, it 
-  is a <em>normal</em> control state.
+  is a control state like in any standard state machine.
   </dd>
   <dt>transient state</dt>
   <dd>transient states are control states which are ephemeral. They are meant to be immediately 
