@@ -114,10 +114,11 @@ That application process concretely consists of 5 screens whose flow is defined 
  
 ![User flow](https://github.com/brucou/component-combinators/raw/master/examples/volunteerApplication/assets/volunteerApplication/application%20process.png) 
 
-This in turn was turned into a state machine orchestrating the screens to display in 
-function of the user inputs. The machine does not display the screen itself (it performs no 
-effects), it computes which screen to display according to the sequence of inputs performed by 
-the user and its extended state (which includes here the state of the application process) :
+This in turn was turned into a non-trivial state machine (6 states, 17 transitions) orchestrating 
+the screens to display in function of the user inputs. The machine does not display the screen 
+itself (it performs no effects), it computes which screen to display according to the sequence of
+ inputs performed by the user and its extended state (which includes here the state of the 
+ application process) :
  
 ![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
 
