@@ -1,17 +1,42 @@
 # Motivation
-There are numerous computations which can be described advantageously[^1] by a parameterizable set
- of rules, coalescing around a fixed set of control states, and matching an output to an input 
- depending on current and past inputs : 
+Time and again we have to implement computations which, while they cannot be modelized by pure 
+functions, however have the following properties :
 
-- An user interface [can be seen as a state transducer](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata), translating a user 
-input into a user action on the interfaced systems, while modifying the user interface's 
-internal state according to a predefined set of rules. 
-- Another particularly interesting field of application is [model-based testing, and test input 
-generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf).
-- Decision-making in game's AI is amenable to modelization by a fixed logic encompassing a fixed 
-set of conditions and game agents' state
+- they do not perform any effects
+- they transform an input into an output, depending only on the present and past inputs
+- the algorithm for the computation involves a finite, parameterizable set of rules, coalescing  
+around a finite, fixed set of control states
 
-Such computations can often enough be modelized through an Extended Hierarchical State Transducer 
+These computations can often be modelized advantageouly[^1] by a class of state machines called 
+hierarchical extended state producer. This library offers a way to define, and use such class of
+ state machines.
+
+The major motivation for this library has been the specifications and implementation of user 
+interfaces. As a matter of fact, to [every user interface can be associated a computation](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata) 
+relating a user input to an action to be performed on the interfaced systems. That computation 
+often has a logic organized around a limited set of control states. For instance, a train 
+ticket booking system will have a window with a `book now` button which will be associated to a 
+search result screen, **or alternatively** to a request to the user to enter missing data. The 
+same input thus produces different outputs. However the rules discriminating the output to 
+produce are simple enough to be described by a finite set of rules, parametrizable by relevant 
+variables specific to the booking logic (if the user already entered his loyalty number, the search 
+will also include the cost of tickets in loyalty points, etc.).
+
+However, it is a very general tool, that have found miscellaneous applications in different 
+contexts :
+
+- user interface specification and implementation for embedded systems
+- [model-based testing, and test input generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf)
+- AI's decision making in games
+
+Concretely, we have so far successfully used this library :
+
+- in [multi-steps workflows](https://github.com/brucou/component-combinators/tree/master/examples/volunteerApplication), a constant feature of enterprise software today
+- for ['smart' synchronous streams](https://github.com/brucou/partial-synchronous-streams), which
+ avoid useless (re-)computations
+- to implement cross-domain communication protocols
+
+In such cases, we were able to modelize our computation with an Extended Hierarchical State Transducer 
 in a way that :
 
 - is economical (complexity of the transducer proportional to complexity of the computation)
@@ -19,19 +44,13 @@ in a way that :
  be visually represented, supporting both internal and external communication, and design 
  specification and documentation)
 - supports step-wise refinement and iterative development (control states can be refined into a 
-hierarchy of substates)
+hierarchy of nested states)
 
-Concretely, we have so far successfully used this library :
-
-- in [multi-steps workflows](https://github.com/brucou/component-combinators/tree/master/examples/volunteerApplication), a constant feature of enterprise software today
-- for ['smart' synchronous streams](https://github.com/brucou/partial-synchronous-streams), which
- avoid useless (re-)computations
-- to implement ad-hoc cross-domain communication protocols
-
-[^1]: In fact, a computation can be understood as [precisely the result of a machine run](https://en.wikipedia.org/wiki/Computability_theory). Some formalization of the matching 
-computing machine however can be useless in practice, which is why we use the term advantageously
- to indicate those computations where a formalization of the computing machine brings desired 
- benefits.
+[^1]: In fact, [computability theory]((https://en.wikipedia.org/wiki/Computability_theory)) links
+ the feasability of a computation to the existence of a machine whose run produces the results of
+  the computation. Some formalizations of the matching computing machine however can be useless 
+  in practice, which is why we use the term advantageously to indicate those computations where 
+  a formalization of the computing machine brings desired benefits.
 
 # So what is an Extended Hierarchical State Transducer ? 
 Let's build the concept progressively.
@@ -74,11 +93,34 @@ Note that if we add concurrency and messaging (broadcast) to extended hierarchic
 # Install
 
 # API
-## API summary
-Our state transducer will be created by the factory function `create_state_machine`, which 
-returns a state transducer which :
+## API design
+The key objectives for the API was :
 
-- must be started manually (with `.start()`), and configured with an initial state 
+- generality and reusability (there is no provision made to accommodate specific use cases or 
+frameworks)
+  - it must be possible to add a concurrency and/or communication mechanism on top of the 
+  current design 
+- complete encapsulation of the state of the state transducer
+- no effects performed by the machine
+- parallel and sequential composability of transducers
+- support for both interactive and reactive programming
+
+As a result of this, the following choices were made :
+
+- functional interface : the transducer is a function, not an object with publicly exposed 
+properties. As such the transducer is a black-box, and only its computed outputs can be observed
+- no exit and entry actions, or activities as in other state machine formalisms
+- every computation performed is synchronous (asynchrony is an effect)
+- no restriction is made on output of transducers, but inputs must follow some conventions (if a
+ machine's output match those conventions, two such machines can be composed by function 
+ composition)
+- reactive programming is enabled by exposing a pure function of an input stream, which run the 
+transducer for each incoming input, thus generating a sequence of outputs
+
+Concretely, our state transducer will be created by the factory function `create_state_machine`, 
+which returns a state transducer which :
+
+- must be started manually (with `.start()`), and configured with an initial event and transition 
 - will compute an output for any input that is sent to it (with `.yield(input)`)
 
 The state transducer is not, in general, a pure function of its inputs. However a given output of
@@ -86,23 +128,21 @@ The state transducer is not, in general, a pure function of its inputs. However 
  that it is possible to associate to a state transducer another function which takes a sequence of
   inputs into a sequence of outputs, in a way that that function is pure. 
   
-  We provide a way to 
-  construct such a function with the `makeStreamingStateMachine` factory to create a stream 
-  transducer, which translates an input stream into an output stream.
+We provide a way to construct such a function with the `makeStreamingStateMachine` factory to 
+create a stream transducer, which translates an input stream into an output stream.
 
 ## General concepts
 To help illustrate the concepts, and the terminology, we will use two examples, featuring 
 basic and advanced features on the hierarchical state transducer model : 
 
-- a real use case of state machine applied to a web application user interface
-- the specification of the behaviour for a cd player
+- a real use case of non-hierarchical extended state machine applied to a web application user 
+interface
+- the specification of the behaviour for a cd player as a hierarchical extended state machine
 
 We will subsequently precise here the vocabulary which will be used throughout the documentation.
   We then describe how the behaviour of a transducer relates to its configuration. In particular
   we detail the concepts and semantics associated to hierarchical states. Finally we present our
    API whose documentation relies on all previously introduced concepts.
-
-mmmm the progression logic is somewhat deficient...
 
 ### Base example
 This example is taken from an actual project in which this library was used. It will be used in 
@@ -131,16 +171,15 @@ itself (it performs no effects), it computes which screen to display according t
 ### CD drawer example
 This example is taken from Ian Horrock's seminal book on statecharts and is the specification of
  a CD player. It features advanced characteristics of hierarchical state machines, including 
- history states, composite states, and entry points.
+ history states, composite states, transient states, automatic transitions, and entry points.
  
 ![cd player state chart](http://i.imgur.com/ygsOVi9.jpg)
-
 
 ### Terminology
 In this section, we seek to define quickly the meaning of the key terms which will be commonly 
 used when referring to state machines.
 
-**TODO** : add references to the cd player graph to illustrate advanced terminology
+**TODO** add for automatic transtition the reference to states in teh cd player chart
 
 <dl>
   <dt>control state</dt>
