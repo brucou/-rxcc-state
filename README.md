@@ -14,10 +14,10 @@ set of conditions and game agents' state
 Such computations can often enough be modelized through an Extended Hierarchical State Transducer 
 in a way that :
 
-- is economical (complexity of the transducer proportional to complexity of the 
-computation)
-- is easy to reason about and communicate (the transducer can be visually represented, supporting 
-both internal and external communication, and design specification and documentation)
+- is economical (complexity of the transducer proportional to complexity of the computation)
+- is reasonably easy to reason about and communicate up to an intermediate scale (the transducer can
+ be visually represented, supporting both internal and external communication, and design 
+ specification and documentation)
 - supports step-wise refinement and iterative development (control states can be refined into a 
 hierarchy of substates)
 
@@ -107,7 +107,8 @@ mmmm the progression logic is somewhat deficient...
 ### Base example
 This example is taken from an actual project in which this library was used. It will be used in 
 this paragraph to illustrate the core terminology defined in subsequent sections, and illustrate 
-somewhat abstract notions.
+somewhat abstract notions. It does not feature hierarchical states, and as such can be seen as a 
+regular extended state machine.
 
 This example deals with a typical multi-step application process, whose user interface is made of a 
 sequence of screens. In each screen, the user is required to introduce or review some 
@@ -129,7 +130,7 @@ itself (it performs no effects), it computes which screen to display according t
 
 ### CD drawer example
 This example is taken from Ian Horrock's seminal book on statecharts and is the specification of
- a CD player. It features advances characteristics of hierarchical state machines, including 
+ a CD player. It features advanced characteristics of hierarchical state machines, including 
  history states, composite states, and entry points.
  
 ![cd player state chart](http://i.imgur.com/ygsOVi9.jpg)
