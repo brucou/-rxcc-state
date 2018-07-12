@@ -12,6 +12,12 @@
 // break out of it, maybe put a guard that if we remain in the same state for X steps,
 // transition automatically (to error or else)
 
+// TODO : add a null event notion. If a null input is received return a null output, taht means no event
+// TODO : in streaming, ignore automatically null events. We don't have a choice but to return null output in the
+// normal autoamta. However null could be a valid return, so using a NULL_OUTPUT variable or SYMBOL??!!  We
+// basically simulate a Maybe Input -> Maybe Output
+// TODO : as a isActualOutput function to discriminate out the Maybe
+
 import { applyPatch } from "fast-json-patch"
 
 // Error messages
@@ -37,7 +43,7 @@ function assertContract(contractFn, contractArgs, errorMessage) {
 function isBoolean(obj) {return typeof(obj) === 'boolean'}
 
 function isUpdateOperation(obj) {
-  // return (typeof(obj)==='object' && Object.keys(obj).length === 0) ||
+  return (typeof(obj)==='object' && Object.keys(obj).length === 0) ||
   (
     ['add', 'replace', 'move', 'test', 'remove', 'copy'].some(op => obj.op === op) &&
     typeof(obj.path) === 'string'
@@ -71,15 +77,14 @@ function wrap(str) { return ['-', str, '-'].join(""); }
 /**
  *
  * @param {FSM_Model} model
- * @param {UpdateOperation[]} modelUpdateOperations
+ * @param {JSON_Patch_Operation[]} modelUpdateOperations
  * @returns {FSM_Model}
  */
 function applyUpdateOperations(/*OUT*/model, modelUpdateOperations) {
   assertContract(isArrayUpdateOperations, [modelUpdateOperations],
     `applyUpdateOperations : ${CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE}`);
 
-  applyPatch(model, modelUpdateOperations, true, false);
-  return model;
+  return applyPatch(model, modelUpdateOperations, true, false).newDocument;
 }
 
 /**
@@ -338,7 +343,7 @@ function create_state_machine(fsmDef, settings) {
     console.log("Predicates:", arr_predicate);
 
     from_proto[event] = arr_predicate.reduce(function (acc, condition, index) {
-      let action = condition.action || always(default_action_result);
+      let action = condition.action;
       console.log("Condition:", condition);
       const condition_checking_fn = (function (condition, settings) {
         let condition_suffix = '';
@@ -350,7 +355,7 @@ function create_state_machine(fsmDef, settings) {
           const predicate = condition.condition;
           condition_suffix = predicate ? '_checking_condition_' + index : '';
           const to = condition.to;
-          let actionResult;
+          let actionResult = default_action_result;
 
           if (!predicate || predicate(model_, event_data, settings)) {
             // CASE : condition for transition is fulfilled so we can execute the actions...
@@ -615,3 +620,32 @@ function makeStreamingStateMachine(fsmDef, settings) {
  * @typedef {*} FSM_Settings
  *
  */
+
+
+Case non-hierarchical state machine :
+A -> B with event[ guard ] / action
+action -> {update state, output] | exception
+update_state = [no update, update 1, update 2, malformed] (I need to update to test composition of updates. Ideally they should be chosen such that order matters, and not idempotent (use JSON patch push possibility))
+output = [no output, {model, event_data} - not cloned, to check immutable, malformed]
+event -> [init, event1, event2, unknown event]
+guard -> [T, F, exception]
+// TODO : I should also clone settings prior to usage, so it is not modified later on inadvertently
+
+  Then Machines = [States x Transitions x event[ guard ] / action]
+    States in [Init, State1, State2, State3]
+    Transitions in [pick two states in States possibly the same]
+
+So stage 1 : input generation
+  Stage 2 : for the generated input, guess the right result and then check vs. actual run
+
+Edge case : malformed state machine : write checker of well-formed (to test too then...)
+
+So Model based Testing algorithm :
+- accumulator initialized to null
+- generate set of states -> accumulator
+- generate set of transitions -> accumulator
+- generate event sequence -> accumulator
+- generate guard -> accumulator
+- generate actions -> accumulator
+
+Now I want to generate some more interesting cases than other, rather than go with exhaustive testing

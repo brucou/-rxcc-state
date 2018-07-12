@@ -1,6 +1,5 @@
 # Now
 - try rollup once again, see if I can get ramda to be tree shaken, and fast-json-patch
-- package.json
 - pass the tests again
   - normal library
   - makeStream library

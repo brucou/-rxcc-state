@@ -2,8 +2,8 @@
 Time and again we have to implement computations which, while they cannot be modelized by pure 
 functions, however have the following properties :
 
-- they do not perform any effects
 - they transform an input into an output, depending only on the present and past inputs
+- they do not perform any effects
 - the algorithm for the computation involves a finite, parameterizable set of rules, coalescing  
 around a finite, fixed set of control states
 
@@ -11,7 +11,7 @@ These computations can often be modelized advantageouly[^1] by a class of state 
 hierarchical extended state producer. This library offers a way to define, and use such class of
  state machines.
 
-The major motivation for this library has been the specifications and implementation of user 
+The major motivation for this library has been the specification and implementation of user 
 interfaces. As a matter of fact, to [every user interface can be associated a computation](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata) 
 relating a user input to an action to be performed on the interfaced systems. That computation 
 often has a logic organized around a limited set of control states. For instance, a train 
@@ -47,15 +47,17 @@ in a way that :
 hierarchy of nested states)
 
 [^1]: In fact, [computability theory]((https://en.wikipedia.org/wiki/Computability_theory)) links
- the feasability of a computation to the existence of a machine whose run produces the results of
-  the computation. Some formalizations of the matching computing machine however can be useless 
+ the feasability of a computation to the existence of a machine whose run produces the 
+ desired results. Some formalizations of the matching computing machine however can be useless 
   in practice, which is why we use the term advantageously to indicate those computations where 
   a formalization of the computing machine brings desired benefits.
 
 # So what is an Extended Hierarchical State Transducer ? 
 Let's build the concept progressively.
 
-An [automaton](https://en.wikipedia.org/wiki/Automata_theory) is a construct made of states designed to determine if the input should be accepted or rejected. It looks a lot like a basic board game where each space on the board represents a state. Each state has information about what to do when an input is received by the machine (again, rather like what to do when you land on the Jail spot in a popular board game). As the machine receives a new input, it looks at the state and picks a new spot based on the information on what to do when it receives that input at that state. When there are no more inputs, the automaton stops and the space it is on when it completes determines whether the automaton accepts or rejects that particular set of inputs.
+An [automaton](https://en.wikipedia.org/wiki/Automata_theory) is a construct made of states 
+designed to determine if a sequence of inputs should be accepted or rejected. It looks a lot like a 
+basic board game where each space on the board represents a state. Each state has information about what to do when an input is received by the machine (again, rather like what to do when you land on the Jail spot in a popular board game). As the machine receives a new input, it looks at the state and picks a new spot based on the information on what to do when it receives that input at that state. When there are no more inputs, the automaton stops and the space it is on when it completes determines whether the automaton accepts or rejects that particular set of inputs.
 
 State machines and automata are essentially interchangeable terms. Automata is the favored term 
 when connoting automata theory, while state machines is more often used in the context of the 
@@ -111,6 +113,8 @@ As a result of this, the following choices were made :
 properties. As such the transducer is a black-box, and only its computed outputs can be observed
 - no exit and entry actions, or activities as in other state machine formalisms
 - every computation performed is synchronous (asynchrony is an effect)
+- action factories return the **updates** to the extended state (JSON patch format) to avoid any 
+unwanted direct modification of the extended state
 - no restriction is made on output of transducers, but inputs must follow some conventions (if a
  machine's output match those conventions, two such machines can be composed by function 
  composition)

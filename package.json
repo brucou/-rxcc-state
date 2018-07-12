@@ -19,7 +19,8 @@
     "build": "babel src --source-maps --out-dir dist-node",
     "build-node-test": "babel test --source-maps --out-dir dist-node-test",
     "clean-test": "rimraf dist-node-test && mkdirp dist-node-test",
-    "test": "watchify -d --transform babelify dist-node-test -o test/test-bundle.js -v"
+    "test": "watchify -d --transform babelify dist-node-test -o test/test-bundle.js -v",
+    "parcel": "parcel test/parcel-index.html"
   },
   "engines": {
     "node": "6.3.0"
@@ -27,6 +28,7 @@
   "author": "brucou",
   "license": "MIT",
   "devDependencies": {
+    "parcel-bundler": "^1.9.5",
     "browser-sync": "^2.18.8",
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.1",
@@ -41,11 +43,11 @@
     "sinon": "^1.17.2",
     "sinon-qunit": "^2.0.0",
     "nodemon": "^1.9.2",
-    "watchify": "^3.8.0"
-  },
-  "dependencies": {
-    "fast-json-patch": "^2.0.0",
+    "watchify": "^3.8.0",
     "ramda": "^0.25.0",
     "rx": "^4.1.0"
+  },
+  "dependencies": {
+    "fast-json-patch": "^2.0.0"
   }
 }
