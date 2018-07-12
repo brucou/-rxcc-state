@@ -102,6 +102,7 @@ The key objectives for the API was :
 frameworks)
   - it must be possible to add a concurrency and/or communication mechanism on top of the 
   current design 
+  - it must be possible to integrate smoothly into React, Angular and your popular framework
 - complete encapsulation of the state of the state transducer
 - no effects performed by the machine
 - parallel and sequential composability of transducers
@@ -234,15 +235,19 @@ used when referring to state machines.
   <dd>Transitions between control states can be automatically evaluated if there are no 
   triggering events configured. The term is a bit confusing however, as it is possible in theory 
   that no transition is actually executed, if none of the configured guard is fulfilled. We 
-  forbid this case by conract, as failing to satisfy any such guard would mean that 
-   the machine never progress to another state!
+  forbid this case by contract, as failing to satisfy any such guard would mean that 
+   the machine never progress to another state! In our CD player example, an automatic transition
+    is defined for control state 3 (`Closing CD drawer`). According to the extended state of our 
+    machine, the transition can have as target either the `CD Drawer Closed` or `CD Loaded` 
+    control states.
   </dd>
   <dt>self transition</dt>
   <dd>Transitions can also occur with origin and destination the same conrol state. When 
-  that happens, the transition is called a self transition.
+  that happens, the transition is called a self transition. In our base example, the `Team Detail
+   Screen` control state features 2 self-transitions.
   </dd>
   <dt>transition evaluation</dt>
-  <dd>Goven a machine in a given control state, and an external event occuring, the transitions 
+  <dd>Given a machine in a given control state, and an external event occuring, the transitions 
   configured for that event are evaluated. This evaluation ends up in identifying a valid 
   transition, which is executed (e.g. taken) leading to a change in the current control state ; 
   or with no satisfying transition in which case the machine remains in the same control state, 
@@ -270,7 +275,7 @@ used when referring to state machines.
   <dt>composite state</dt>
   <dd>As previously presented, an hierarchical state machine may feature control states which may 
   themselves be hierarchical state machines. When that occurs, such control state will be called 
-  a composite state.
+  a composite state. In our CD player example, the control state `CD loaded` is a composite state.
   </dd>
   <dt>compound state</dt>
   <dd>exact synonim of *composite state*
@@ -280,13 +285,18 @@ used when referring to state machines.
   </dd>
   <dt>atomic state</dt>
   <dd>An atomic state is a control state which is not itself a state machine. In other words, it 
-  is a control state like in any standard state machine.
+  is a control state like in any standard state machine. In our base example, all states are 
+  atomic states. In our CD player example, the control state 5 is an atomic state. The `CD 
+  loaded` control state is not.
   </dd>
   <dt>transient state</dt>
   <dd>transient states are control states which are ephemeral. They are meant to be immediately 
   transitioned from. Transient state thus feature no external triggering event (but necessitates 
   of internal automatic event), and may have associated guards. By contract, one of these guards,
-   if any, must be fulfilled to prevent the machine for eternally remain in the same control state  
+   if any, must be fulfilled to prevent the machine for eternally remain in the same control 
+   state.   In our CD player example, the control state 3 is a transient state. Upon entering 
+   that state, the machine will immediately transition to either control state 1, or composite 
+   state `CD loaded`.
   </dd>
   <dt>terminal state</dt>
   <dd>the terminal state is a control state from which the machine is not meant to transition 
@@ -296,17 +306,22 @@ used when referring to state machines.
   hierarchical automata. In our restrictive context, the history state allows to transition back 
   to the previous control state that was previously transitioned away from. This makes sense 
   mostly in the context of composite states, which are themselves state machines and hence can be
-   in one of several control states. A picture is worth many words, but the picture is still in 
-   the works. **TODO : only shallow history for us, deep history is hard to reason about**
+   in one of several control states. In our CD player example, there are a few examples of 
+   history states in the `CD loaded` composite state. For instance, if while being paused 
+   (atomic control state 6), the user request the previous CD track, then the machine will 
+   transition to... the same control state 6. The same is true if prior to the user request the 
+   machine was in control state 4, 5, or 7. History state avoids having to write individual 
+   transitions to each of those states from their parent composite state.
   </dd>
   <dt>entry point</dt>
-  <dd>Entry points are transitions which are taken when entering a given composite state. This 
-  naturally only applies to transitions from states which are enclosed in the composite state 
-  towards the mentioned composite state. An history state can also be used as an entry point.
-  </dd>
-  <dt>exit point</dt>
-  <dd>Exit points are transitions which are taken when leaving a given composite state. They are 
-  less useful in our context. **TODO : example??**
+  <dd>Entry points are the target of transitions which are taken when entering a given composite 
+  state. This naturally only applies to transitions with origin a control state not included in the 
+  composite state and destination a control state part of the composite state. An history state  
+  can also be used as an entry point. In our CD player example, control state 1 is an entry point
+   for the composite state `No CD loaded`. The same stands for `H` (history state) in `CD Loaded`
+    composite state. Similarly a transition from `No CD loaded` to `CD loaded` will result in the
+     machine ending in control state 4 (`CD stopped`) by virtue of a chain of entry points 
+     leading to that control state.
   </dd>
 </dl>
 
