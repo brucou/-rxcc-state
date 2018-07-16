@@ -108,7 +108,7 @@ QUnit.test("INIT event, no action, no guard", function exec_test(assert) {
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: NO_ACTION }
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -124,7 +124,7 @@ QUnit.test("INIT event, no action, false guard", function exec_test(assert) {
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: F, action: NO_ACTION }
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -140,7 +140,7 @@ QUnit.test("INIT event, no action, true guard", function exec_test(assert) {
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: T, action: NO_ACTION }
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -160,7 +160,7 @@ QUnit.test("INIT event, action, false guard", function exec_test(assert) {
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: F, action: fail_if_called }
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -188,7 +188,7 @@ QUnit.test("INIT event, action, true guard", function exec_test(assert) {
         action: spied_on_dummy_action
       }
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -220,7 +220,7 @@ QUnit.test("INIT event, 2 actions, [T,T] conditions, 1st action executed", funct
         ]
       }
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -251,7 +251,7 @@ QUnit.test("INIT event, 2 actions, [F,T] conditions, 2nd action executed", funct
         ]
       }
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -282,7 +282,7 @@ QUnit.test("INIT event, 2 actions, [T,F] conditions, 1st action executed", funct
         ]
       }
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -313,7 +313,7 @@ QUnit.test("INIT event, 2 actions, [F,F] conditions, no action executed", functi
         ]
       }
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -332,7 +332,7 @@ QUnit.test("INIT event, 2 actions with no model update, NOK -> A -> B, no guards
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: dummy_action },
       { from: 'A', to: 'B', event: EVENT1, action: another_dummy_action },
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);
@@ -352,7 +352,7 @@ QUnit.test("INIT event, 2 actions with model update, NOK -> A -> B, no guards", 
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: dummy_action_with_update },
       { from: 'A', to: 'B', event: EVENT1, action: another_dummy_action_with_update },
     ],
-    model_initial: model_initial
+    initial_extended_state: model_initial
   };
   const settings = default_settings;
   const fsm = create_state_machine(fsmDef, settings);

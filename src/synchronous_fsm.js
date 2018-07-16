@@ -281,7 +281,7 @@ function build_state_enum(states) {
  * @returns {{yield : Function, start: Function}}
  */
 function create_state_machine(fsmDef, settings) {
-  const { states : control_states, events, transitions, model_initial } = fsmDef;
+  const { states : control_states, events, transitions, initial_extended_state } = fsmDef;
   const subject_factory = settings && settings.subject_factory;
   if (!subject_factory) throw `create_state_machine : cannot find a subject factory (use Rxjs subject??)`
 
@@ -295,7 +295,7 @@ function create_state_machine(fsmDef, settings) {
   // will be evaluated It is safely contained in a closure so it cannot be accessed in any way
   // outside the state machine. Note also that the model is only modified through JSON patch operations which create
   // a new model every time. There is hence no need to do any cloning.
-  let model = model_initial;
+  let model = initial_extended_state;
   let is_init_state = {}; // {Object<state_name,boolean>}, allows to know whether a state has a
   // init transition defined
   let is_auto_state = {}; // {Object<state_name,boolean>}, allows to know whether a state has an
@@ -513,7 +513,7 @@ function create_state_machine(fsmDef, settings) {
   }
 
   function start() {
-    return send_event({ [INIT_EVENT]: model_initial });
+    return send_event({ [INIT_EVENT]: initial_extended_state });
   }
 
   /**
@@ -575,7 +575,7 @@ function makeStreamingStateMachine(fsmDef, settings) {
  * specified state machine
  * @property {Array<EventLabel>} events
  * @property {Array<Transition>} transitions
- * @property {*} model_initial
+ * @property {*} initial_extended_state
  */
 /**
  * @typedef {String} Event_Label
