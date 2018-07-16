@@ -103,7 +103,7 @@ QUnit.module("Testing create_state_machine(fsmDef, settings)", {});
 // NOK -init> A, no action, no guard, it is init -> outputs NO_OUTPUT
 QUnit.test("INIT event, no action, no guard", function exec_test(assert) {
   const fsmDef = {
-    control_states: { A: '' },
+    states: { A: '' },
     events: [],
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: NO_ACTION }
@@ -119,7 +119,7 @@ QUnit.test("INIT event, no action, no guard", function exec_test(assert) {
 // NOK -init> A, no action, false guard, it is init -> outputs as NO_OUTPUT
 QUnit.test("INIT event, no action, false guard", function exec_test(assert) {
   const fsmDef = {
-    control_states: { A: '' },
+    states: { A: '' },
     events: [],
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: F, action: NO_ACTION }
@@ -135,7 +135,7 @@ QUnit.test("INIT event, no action, false guard", function exec_test(assert) {
 // NOK -init> A, no action, true guard, it is init -> default action called, outputs NO_OUTPUT
 QUnit.test("INIT event, no action, true guard", function exec_test(assert) {
   const fsmDef = {
-    control_states: { A: '' },
+    states: { A: '' },
     events: [],
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: T, action: NO_ACTION }
@@ -155,7 +155,7 @@ QUnit.test("INIT event, action, false guard", function exec_test(assert) {
       assert.ok(true, false, `Guard is false, this action should not be called!`)
     });
   const fsmDef = {
-    control_states: { A: '' },
+    states: { A: '' },
     events: [],
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: F, action: fail_if_called }
@@ -177,7 +177,7 @@ QUnit.test("INIT event, action, true guard", function exec_test(assert) {
       assert.deepEqual(settings, default_settings, `action called with settings as third parameter`);
     });
   const fsmDef = {
-    control_states: { A: '' },
+    states: { A: '' },
     events: [],
     transitions: [
       {
@@ -210,7 +210,7 @@ QUnit.test("INIT event, 2 actions, [T,T] conditions, 1st action executed", funct
       assert.ok(true, false, `This true guard comes second, this action should not be called!`)
     });
   const fsmDef = {
-    control_states: { A: '' },
+    states: { A: '' },
     events: [],
     transitions: [
       {
@@ -241,7 +241,7 @@ QUnit.test("INIT event, 2 actions, [F,T] conditions, 2nd action executed", funct
       assert.ok(true, false, `This true guard comes second, this action should not be called!`)
     });
   const fsmDef = {
-    control_states: { A: '' },
+    states: { A: '' },
     events: [],
     transitions: [
       {
@@ -272,7 +272,7 @@ QUnit.test("INIT event, 2 actions, [T,F] conditions, 1st action executed", funct
       assert.ok(true, false, `This true guard comes second, this action should not be called!`)
     });
   const fsmDef = {
-    control_states: { A: '' },
+    states: { A: '' },
     events: [],
     transitions: [
       {
@@ -303,7 +303,7 @@ QUnit.test("INIT event, 2 actions, [F,F] conditions, no action executed", functi
       assert.ok(true, false, `This true guard comes second, this action should not be called!`)
     });
   const fsmDef = {
-    control_states: { A: '' },
+    states: { A: '' },
     events: [],
     transitions: [
       {
@@ -326,7 +326,7 @@ QUnit.test("INIT event, 2 actions, [F,F] conditions, no action executed", functi
 // A -ev1> B, no guards, another dummy action
 QUnit.test("INIT event, 2 actions with no model update, NOK -> A -> B, no guards", function exec_test(assert) {
   const fsmDef = {
-    control_states: { A: '', B: '' },
+    states: { A: '', B: '' },
     events: [EVENT1],
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: dummy_action },
@@ -346,7 +346,7 @@ QUnit.test("INIT event, 2 actions with no model update, NOK -> A -> B, no guards
 // WITH MODEL UPDATE and test of model update, settings and event passing : except last model update
 QUnit.test("INIT event, 2 actions with model update, NOK -> A -> B, no guards", function exec_test(assert) {
   const fsmDef = {
-    control_states: { A: '', B: '' },
+    states: { A: '', B: '' },
     events: [EVENT1],
     transitions: [
       { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: dummy_action_with_update },

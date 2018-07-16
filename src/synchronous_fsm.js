@@ -281,7 +281,7 @@ function build_state_enum(states) {
  * @returns {{yield : Function, start: Function}}
  */
 function create_state_machine(fsmDef, settings) {
-  const { control_states, events, transitions, model_initial } = fsmDef;
+  const { states : control_states, events, transitions, model_initial } = fsmDef;
   const subject_factory = settings && settings.subject_factory;
   if (!subject_factory) throw `create_state_machine : cannot find a subject factory (use Rxjs subject??)`
 
@@ -571,7 +571,7 @@ function makeStreamingStateMachine(fsmDef, settings) {
 // TODO : document the merge settings (+filter necessary on prototye)
 /**
  * @typedef {Object} FSM_Def
- * @property {Object.<Control_State, *>} control_states Object whose every key is a control state admitted by the
+ * @property {Object.<Control_State, *>} states Object whose every key is a control state admitted by the
  * specified state machine
  * @property {Array<EventLabel>} events
  * @property {Array<Transition>} transitions
@@ -622,6 +622,7 @@ function makeStreamingStateMachine(fsmDef, settings) {
  */
 
 
+/*
 Case non-hierarchical state machine :
 A -> B with event[ guard ] / action
 action -> {update state, output] | exception
@@ -649,3 +650,4 @@ So Model based Testing algorithm :
 - generate actions -> accumulator
 
 Now I want to generate some more interesting cases than other, rather than go with exhaustive testing
+*/

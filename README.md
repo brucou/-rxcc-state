@@ -350,6 +350,7 @@ transition must be configured and be executed between the initial control state 
 # Tests
 
 # References
+[comonadic user interfaces](https://functorial.com/the-future-is-comonadic/main.pdf)
 
 # Possible improvements
 - any ideas? Post an issue!
