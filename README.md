@@ -104,8 +104,9 @@ frameworks)
 
 As a result of this, the following choices were made :
 
-- functional interface : the transducer is used through a sole function, not an object with 
-publicly exposed properties. As such the transducer is a black-box, and only its computed outputs
+- functional interface : the transducer is used through a sole `yield` function. While two 
+syntactic sugars are provided (`start` for sending the mandatory INIT event, `yield` is attached 
+to the state machine object). As such, the transducer is a black-box, and only its computed outputs
   can be observed
 - no exit and entry actions, or activities as in other state machine formalisms
   - there is no loss of generality as both entry and exit actions can be implemented with our 
@@ -114,8 +115,8 @@ publicly exposed properties. As such the transducer is a black-box, and only its
 - action factories return the **updates** to the extended state (JSON patch format) to avoid any 
 unwanted direct modification of the extended state
 - no restriction is made on output of transducers, but inputs must follow some conventions (if a
- machine's output match those conventions, two such machines can be composed by function 
- composition)
+ machine's output match those conventions, two such machines can be composed by passing the 
+ output of a yield from the firs machine as an input to the second machine)
 - reactive programming is enabled by exposing a pure function of an input stream, which run the 
 transducer for each incoming input, thus generating a sequence of outputs
 
