@@ -7,21 +7,14 @@ functions, however have the following properties :
 - the algorithm for the computation involves a finite, parameterizable set of rules, coalescing  
 around a finite, fixed set of control states
 
-These computations can often be modelized advantageouly[^1] by a class of state machines called 
+These computations can often be modelized advantageously[^1] by a class of state machines called 
 hierarchical extended state producer. This library offers a way to define, and use such class of
  state machines.
 
 The major motivation for this library has been the specification and implementation of user 
 interfaces. As a matter of fact, to [every user interface can be associated a computation](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata) 
 relating a user input to an action to be performed on the interfaced systems. That computation 
-often has a logic [organized around a limited set of control states](#base-example). For 
-instance, a train ticket booking system will have a window with a `book now` button which will be
- associated to a search result screen, **or alternatively** to a request to the user to enter 
- missing data. 
- The same input thus produces different outputs. However the rules discriminating the output to 
-produce are simple enough to be described by a finite set of rules, parametrizable by relevant 
-variables specific to the booking logic (if the user already entered his loyalty number, the search 
-will also include the cost of tickets in loyalty points, etc.).
+often has a logic [organized around a limited set of control states](#base-example).
 
 However, it is a very general tool, that have found miscellaneous applications in different 
 contexts :
@@ -111,9 +104,12 @@ frameworks)
 
 As a result of this, the following choices were made :
 
-- functional interface : the transducer is a function, not an object with publicly exposed 
-properties. As such the transducer is a black-box, and only its computed outputs can be observed
+- functional interface : the transducer is used through a sole function, not an object with 
+publicly exposed properties. As such the transducer is a black-box, and only its computed outputs
+  can be observed
 - no exit and entry actions, or activities as in other state machine formalisms
+  - there is no loss of generality as both entry and exit actions can be implemented with our 
+  state transducer, there is simply no API or syntactic support for it
 - every computation performed is synchronous (asynchrony is an effect)
 - action factories return the **updates** to the extended state (JSON patch format) to avoid any 
 unwanted direct modification of the extended state
@@ -331,7 +327,7 @@ We give here a quick summary of the operational semantics for the state transduc
 - the machine has a fixed initial control state prior to starting
 - starting the machine (`.start()`) triggers the internal INIT event which advances the state 
 machine out of the initial control state towards the relevant user-configured control state.
-- **TODO**
+- **TODO** also semantics of history states
 
 ### Example run
 To illustrate the previously described transducer semantics, let's run the CD drawer example.
