@@ -14,10 +14,11 @@ hierarchical extended state producer. This library offers a way to define, and u
 The major motivation for this library has been the specification and implementation of user 
 interfaces. As a matter of fact, to [every user interface can be associated a computation](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata) 
 relating a user input to an action to be performed on the interfaced systems. That computation 
-often has a logic organized around a limited set of control states. For instance, a train 
-ticket booking system will have a window with a `book now` button which will be associated to a 
-search result screen, **or alternatively** to a request to the user to enter missing data. The 
-same input thus produces different outputs. However the rules discriminating the output to 
+often has a logic [organized around a limited set of control states](#base-example). For 
+instance, a train ticket booking system will have a window with a `book now` button which will be
+ associated to a search result screen, **or alternatively** to a request to the user to enter 
+ missing data. 
+ The same input thus produces different outputs. However the rules discriminating the output to 
 produce are simple enough to be described by a finite set of rules, parametrizable by relevant 
 variables specific to the booking logic (if the user already entered his loyalty number, the search 
 will also include the cost of tickets in loyalty points, etc.).
