@@ -1,6 +1,6 @@
 # Motivation
 Time and again we have to implement computations which, while they cannot be modelized by pure 
-functions, however have the following properties :
+functions, however have the following interesting properties :
 
 - they transform an input into an output, depending only on the present and past inputs
 - they do not perform any effects
