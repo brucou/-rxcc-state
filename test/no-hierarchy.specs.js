@@ -18,6 +18,8 @@ const default_settings = {
   subject_factory: function () {return new Rx.Subject()},
   merge : Rx.Observable.merge
 };
+const FALSE_GUARD = function always_false(action) {return [{predicate:F, to : undefined, action}]};
+const TRUE_GUARD = function always_true(to, action) { return [{predicate:T, to, action}]};
 
 const NO_ACTION = null;
 const EVENT1 = 'event1';
@@ -158,7 +160,7 @@ QUnit.test("INIT event, action, false guard", function exec_test(assert) {
     states: { A: '' },
     events: [],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: F, action: fail_if_called }
+      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, conditions: FALSE_GUARD(fail_if_called) }
     ],
     initial_extended_state: model_initial
   };
@@ -182,10 +184,8 @@ QUnit.test("INIT event, action, true guard", function exec_test(assert) {
     transitions: [
       {
         from: INITIAL_STATE_NAME,
-        to: 'A',
         event: INIT_EVENT,
-        condition: T,
-        action: spied_on_dummy_action
+        guards: TRUE_GUARD('A', spied_on_dummy_action),
       }
     ],
     initial_extended_state: model_initial
@@ -214,9 +214,9 @@ QUnit.test("INIT event, 2 actions, [T,T] conditions, 1st action executed", funct
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME, event: INIT_EVENT, conditions: [
-          { condition: T, to: 'A', action: spied_on_dummy_action },
-          { condition: T, to: 'A', action: fail_if_called }
+        from: INITIAL_STATE_NAME, event: INIT_EVENT, guards: [
+          { predicate: T, to: 'A', action: spied_on_dummy_action },
+          { predicate: T, to: 'A', action: fail_if_called }
         ]
       }
     ],
@@ -245,9 +245,9 @@ QUnit.test("INIT event, 2 actions, [F,T] conditions, 2nd action executed", funct
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME, event: INIT_EVENT, conditions: [
-          { condition: F, to: 'A', action: fail_if_called },
-          { condition: T, to: 'A', action: spied_on_dummy_action }
+        from: INITIAL_STATE_NAME, event: INIT_EVENT, guards: [
+          { predicate: F, to: 'A', action: fail_if_called },
+          { predicate: T, to: 'A', action: spied_on_dummy_action }
         ]
       }
     ],
@@ -276,9 +276,9 @@ QUnit.test("INIT event, 2 actions, [T,F] conditions, 1st action executed", funct
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME, event: INIT_EVENT, conditions: [
-          { condition: F, to: 'A', action: spied_on_dummy_action },
-          { condition: T, to: 'A', action: fail_if_called }
+        from: INITIAL_STATE_NAME, event: INIT_EVENT, guards: [
+          { predicate: F, to: 'A', action: spied_on_dummy_action },
+          { predicate: T, to: 'A', action: fail_if_called }
         ]
       }
     ],
@@ -307,9 +307,9 @@ QUnit.test("INIT event, 2 actions, [F,F] conditions, no action executed", functi
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME, event: INIT_EVENT, conditions: [
-          { condition: F, to: 'A', action: fail_if_called },
-          { condition: F, to: 'A', action: fail_if_called }
+        from: INITIAL_STATE_NAME, event: INIT_EVENT, guards: [
+          { predicate: F, to: 'A', action: fail_if_called },
+          { predicate: F, to: 'A', action: fail_if_called }
         ]
       }
     ],

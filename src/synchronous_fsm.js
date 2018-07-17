@@ -19,10 +19,12 @@
 // TODO : as a isActualOutput function to discriminate out the Maybe
 
 import { applyPatch } from "fast-json-patch"
+import { objectTreeLenses, postOrderTraverseTree } from "fp-rosetree"
 
 // Error messages
 const CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE =
   `Model update function must return valid update operations!`;
+const SEP = '.';
 
 // Ramda fns
 function always(x) {return x}
@@ -43,11 +45,11 @@ function assertContract(contractFn, contractArgs, errorMessage) {
 function isBoolean(obj) {return typeof(obj) === 'boolean'}
 
 function isUpdateOperation(obj) {
-  return (typeof(obj)==='object' && Object.keys(obj).length === 0) ||
-  (
-    ['add', 'replace', 'move', 'test', 'remove', 'copy'].some(op => obj.op === op) &&
-    typeof(obj.path) === 'string'
-  )
+  return (typeof(obj) === 'object' && Object.keys(obj).length === 0) ||
+    (
+      ['add', 'replace', 'move', 'test', 'remove', 'copy'].some(op => obj.op === op) &&
+      typeof(obj.path) === 'string'
+    )
 }
 
 function isEmptyArray(obj) {return Array.isArray(obj) && obj.length === 0}
@@ -73,6 +75,10 @@ export const default_action_result = {
 };
 
 function wrap(str) { return ['-', str, '-'].join(""); }
+
+function times(fn, n) {
+  return Array.apply(null, { length: n }).map(Number.call, Number).map(fn)
+}
 
 /**
  *
@@ -280,8 +286,8 @@ function build_state_enum(states) {
  * extra settings the API user wants to make available in state machine's scope
  * @returns {{yield : Function, start: Function}}
  */
-function create_state_machine(fsmDef, settings) {
-  const { states : control_states, events, transitions, initial_extended_state } = fsmDef;
+export function create_state_machine(fsmDef, settings) {
+  const { states: control_states, events, transitions, initial_extended_state } = fsmDef;
   const subject_factory = settings && settings.subject_factory;
   if (!subject_factory) throw `create_state_machine : cannot find a subject factory (use Rxjs subject??)`
 
@@ -307,15 +313,10 @@ function create_state_machine(fsmDef, settings) {
 
   transitions.forEach(function (transition) {
     console.log("processing transition:", transition);
-    let from = transition.from, to = transition.to;
-    const action = transition.action;
-    let event = transition.event;
-    // CONTRACT : `conditions` property used for array of conditions, otherwise `condition`
-    // property is used
-    let arr_predicate = transition.conditions || transition.condition;
+    let { from, to, action, event, guards: arr_predicate } = transition;
     // CASE : ZERO OR ONE condition set
-    if ((arr_predicate && !arr_predicate.forEach) || !arr_predicate) arr_predicate = [
-      { condition: arr_predicate, to: to, action: action }
+    if (!arr_predicate) arr_predicate = [
+      { predicate: arr_predicate, to: to, action: action }
     ];
 
     // CASE : transition has a init event
@@ -342,27 +343,26 @@ function create_state_machine(fsmDef, settings) {
     console.log("This is transition for event:", event);
     console.log("Predicates:", arr_predicate);
 
-    from_proto[event] = arr_predicate.reduce(function (acc, condition, index) {
-      let action = condition.action;
-      console.log("Condition:", condition);
-      const condition_checking_fn = (function (condition, settings) {
+    from_proto[event] = arr_predicate.reduce(function (acc, guard, index) {
+      let action = guard.action;
+      console.log("Guard:", guard);
+      const condition_checking_fn = (function (guard, settings) {
         let condition_suffix = '';
         // We add the `current_state` because the current state might be different from the `from`
         // field here This is the case for instance when we are in a substate, but through
         // prototypal inheritance it is the handler of the prototype which is called
         const condition_checking_fn = function (model_, event_data, current_state) {
           from = current_state || from;
-          const predicate = condition.condition;
+          const { predicate, to } = guard;
           condition_suffix = predicate ? '_checking_condition_' + index : '';
-          const to = condition.to;
           let actionResult = default_action_result;
 
           if (!predicate || predicate(model_, event_data, settings)) {
-            // CASE : condition for transition is fulfilled so we can execute the actions...
+            // CASE : guard for transition is fulfilled so we can execute the actions...
             console.info("IN STATE ", from);
             console.info("WITH model, event data, settings BEING ", model_, event_data, settings);
             console.info("CASE : "
-              + (predicate ? "condition " + predicate.name + " for transition is fulfilled"
+              + (predicate ? "guard " + predicate.name + " for transition is fulfilled"
                 : "automatic transition"));
             if (action) {
               // CASE : we do have some actions to execute
@@ -387,19 +387,19 @@ function create_state_machine(fsmDef, settings) {
             console.info("ENTERING NEXT STATE : ", next_state);
 
             return { stop: true, output: actionResult.output }; // allows for chaining and stop
-                                                                // chaining condition
+                                                                // chaining guard
           }
           else {
-            // CASE : condition for transition is not fulfilled
+            // CASE : guard for transition is not fulfilled
             console.log("CASE : "
-              + (predicate ? "condition " + predicate.name + " for transition NOT fulfilled..."
+              + (predicate ? "guard " + predicate.name + " for transition NOT fulfilled..."
                 : "no predicate"));
             return { stop: false, output: NO_OUTPUT };
           }
         };
         condition_checking_fn.displayName = from + condition_suffix;
         return condition_checking_fn;
-      })(condition, settings);
+      })(guard, settings);
 
       return function arr_predicate_reduce_fn(model_, event_data, current_state) {
         const condition_checked = acc(model_, event_data, current_state);
@@ -531,11 +531,6 @@ function create_state_machine(fsmDef, settings) {
   }
 }
 
-export {
-  create_state_machine,
-  makeStreamingStateMachine
-}
-
 /**
  *
  * @param {FSM_Def} fsmDef
@@ -544,7 +539,7 @@ export {
  * Otherwise can also hold extra settings the API user wants to make available in state machine's scope
  * @returns {function(Object<String, Rx.Observable>): *}
  */
-function makeStreamingStateMachine(fsmDef, settings) {
+export function makeStreamingStateMachine(fsmDef, settings) {
   const fsm = create_state_machine(fsmDef, settings);
   const merge = settings && settings.merge;
   if (!merge) throw `makeStreamingStateMachine : could not find an observable merge function! use Rx.Observable.merge??`
@@ -565,6 +560,92 @@ function makeStreamingStateMachine(fsmDef, settings) {
   }
 
   return computeActions
+}
+
+/**
+ * Converts a transducer definition to a textual format for interpretation by PlantUml tools
+ * @param {FSM_Def} fsmDef
+ * @param {*} settings
+ */
+export function toPlantUml(fsmDef, settings) {
+  const { states, transitions } = fsmDef;
+  const { getChildren, constructTree, getLabel } = objectTreeLenses;
+  const stringify = path => path.join(SEP);
+  const getChildrenNumber = (tree, traversalState) => getChildren(tree, traversalState).length;
+  const traverse = {
+    seed: () => Map,
+    visit: (pathMap, traversalState, tree) => {
+      const { path } = traversalState.get(tree);
+      const controlState = getLabel(tree).key;
+      const childrenTranslation = times(
+        index => pathMap.get(stringify(path.concat(index))),
+        getChildrenNumber(tree, traversalState)
+      );
+      const translation = stateToPlantUML(controlState, childrenTranslation, transitions);
+      pathMap.set(stringify(path), translation);
+
+      return pathMap;
+    }
+  };
+
+  const translationMap = postOrderTraverseTree(objectTreeLenses, traverse, states);
+
+  const mappedTree = translationMap.get(stringify(PATH_ROOT));
+  translationMap.clear();
+
+  return mappedTree;
+}
+
+/**
+ * Convert a state machine specs into a plantUML format, limiting its conversion scope to a given control state and
+ * its nested hierarchy
+ * @param {Control_State} controlState
+ * @param {Array<String>} childrenTranslation conversion of the states nested in the given control state
+ * @param {Array<Transition>} transitions Full set of transitions as defined in the state machine specs
+ * CONTRACT : All control states must have different names...
+ */
+function stateToPlantUML(controlState, childrenTranslation, transitions) {
+  return [
+    `state "${displayName(controlState)}" as ${controlState} <<NoContent>> {`,
+    childrenTranslation.join('\n'),
+    `}`,
+    translateTransitions(controlState, transitions)
+  ].join('\n');
+  // TODO : add history states!!
+  // state "{clean(controlState)}" as {controlState} <<NoContent>> {
+  //   {childrenTranslation}
+  // }
+  // INIT_TRANSITION? (i.e. [*] -> ...
+  // All transitions who starts with control states
+  // CD_Drawer_Closed--> CD_Drawer_Open: Eject
+}
+
+function translateTransitions(controlState, transitions) {
+  const entryTransitionTranslation = void 0; // TODO
+  // TODO same history if same origin-dest, only guard change, state "H" as orig-dest-hist, use a map when
+  // traversing transitiosn to have a single value for orig-dest history
+  const historyTransitionTranslation = void 0;
+  const standardTransitionTranslation = transitions.map(transition => {
+    // TODO
+  });
+
+  return [
+    entryTransitionTranslation,
+    historyTransitionTranslation,
+    standardTransitionTranslation.join('\n')
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+/**
+ * Returns true if both parent share the same parent, e.g x.y vs. x.z
+ * @param {Array<String>} pathA
+ * @param {Array<String>} pathB
+ */
+function hasSameParent(pathA, pathB) {
+  // TODO : bewar edge case empty arrays...
+  return pathA.slice(0, a.length - 1).join('.') === pathB.slice(0, a.length - 1).join('.')
 }
 
 // TODO : explain hierarchy, initial events, auto events, and other contracts
@@ -601,12 +682,12 @@ function makeStreamingStateMachine(fsmDef, settings) {
  *   returned by the action factory
  */
 /**
- * @typedef {{from : Control_State, conditions : Array<Condition>}} Conditional_Transition Transition for the
+ * @typedef {{from : Control_State, guards : Array<Condition>}} Conditional_Transition Transition for the
  * specified state is contingent to some guards being passed. Those guards are defined as an array.
  *
  */
 /**
- * @typedef {{condition : Predicate, to : Control_State, action : ActionFactory}} Condition On satisfying the
+ * @typedef {{predicate : Predicate, to : Control_State, action : ActionFactory}} Condition On satisfying the
  * specified predicate, the received event data will trigger the transition to the specified target control state
  * and invoke the action created by the specified action factory, leading to an update of the internal state of the
  * extended state machine and possibly an output to the state machine client.

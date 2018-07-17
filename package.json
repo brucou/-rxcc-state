@@ -48,6 +48,7 @@
     "rx": "^4.1.0"
   },
   "dependencies": {
-    "fast-json-patch": "^2.0.0"
+    "fast-json-patch": "^2.0.0",
+    "fp-rosetree": "^0.4.1"
   }
 }
