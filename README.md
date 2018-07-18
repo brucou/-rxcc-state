@@ -349,6 +349,21 @@ transition must be configured and be executed between the initial control state 
 - **TODO**
 
 # Tests
+Automated tests are so far incomplete. Most tests have been run manually. To run the 
+current automated test, type in a terminal : `npm run test`
+
+# State machine visualization
+We have included two helpers for visualization of the state transducer :
+
+- conversion to plantUML : `toPlantUml :: FSM_Def -> PlantUml`.
+  - the resulting chain of characters can be pasted in [plantText](`https://www.planttext.com/`) 
+  or [planUML previewer](http://sujoyu.github.io/plantuml-previewer/) to get an automated graph 
+  representation. Both will produce the exact same visual representation.
+- [online visualizer](https://github.com/brucou/state-transducer-visualizer) (dagre layout 
+engine) : for instructions, cf. github directory 
+
+Automated visualization works fine with simple graphs, but seems to encounter trouble to generate
+ optimally satisfying complex graphs. The Dagre layout seems to be a relatively good option. 
 
 # References
 [comonadic user interfaces](https://functorial.com/the-future-is-comonadic/main.pdf)

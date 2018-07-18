@@ -19,7 +19,7 @@
 // TODO : as a isActualOutput function to discriminate out the Maybe
 
 import { applyPatch } from "fast-json-patch"
-import { objectTreeLenses, postOrderTraverseTree } from "fp-rosetree"
+import { arrayTreeLenses, objectTreeLenses, postOrderTraverseTree } from "fp-rosetree"
 
 // Error messages
 const CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE =
@@ -78,13 +78,13 @@ function is_from_control_state(controlState) {
   }
 }
 
-function is_to_history_control_state_of(controlState){
-  return function(transition){
+function is_to_history_control_state_of(controlState) {
+  return function (transition) {
     return is_history_control_state_of(controlState, transition.to)
   }
 }
 
-function is_history_control_state_of(controlState, state){
+function is_history_control_state_of(controlState, state) {
   return state.substring(HISTORY_PREFIX.length) === controlState
 }
 
@@ -695,7 +695,7 @@ function format_history_states(controlState, transitions) {
       .reduce((acc, transition) => {
         acc[format_history_transition_state_name(transition)] = void 0;
         return acc
-    }, accTranslation)
+      }, accTranslation)
   }, {});
   const historyStates = Object.keys(historyStatesObj);
 
@@ -783,18 +783,55 @@ function format_history_transitions(controlState, transitions) {
     .join('\n');
 }
 
-/**
- * Returns true if both parent share the same parent, e.g x.y vs. x.z
- * @param {Array<String>} pathA
- * @param {Array<String>} pathB
- */
-function hasSameParent(pathA, pathB) {
-  // TODO : bewar edge case empty arrays...
-  return pathA.slice(0, a.length - 1).join('.') === pathB.slice(0, a.length - 1).join('.')
+export function toDagreVisualizerFormat(fsmDef) {
+  // only thing to do here is to replace functions (guards and actions) by their name, and keep only
+  // the states and transitions properties
+  // ah no I also need to turn the states obj tree into an array-based tree... grrr
+  const { states, transitions } = fsmDef;
+  const { getLabel, getChildren } = objectTreeLenses;
+  const { constructTree } = arrayTreeLenses;
+  const getChildrenNumber = (tree, traversalState) => getChildren(tree, traversalState).length;
+  const stringify = path => path.join(SEP);
+  const traverse = {
+    seed: () => Map,
+    visit: (pathMap, traversalState, tree) => {
+      const { path } = traversalState.get(tree);
+      const controlState = getLabel(tree).key;
+      const children = times(
+        index => pathMap.get(stringify(path.concat(index))),
+        getChildrenNumber(tree, traversalState)
+      );
+      debugger
+      pathMap.set(stringify(path), constructTree(controlState, children));
+
+      return pathMap;
+    }
+  };
+
+  const _translatedStates = postOrderTraverseTree(objectTreeLenses, traverse, { [INITIAL_STATE_NAME]: states });
+  debugger
+  const translatedStates = _translatedStates.get('0');
+
+  const translatedTransitions = transitions.map(transition => {
+    const { from, to, event, guards, action } = transition;
+    if (guards) {
+      const translatedGuards = guards.map(guard => {
+        const { predicate, to, action } = guard;
+        return { predicate: predicate.name, to, action: action.name }
+      })
+      return { from, event, guards: translatedGuards }
+    }
+    else {
+      // case {from, to event, action}
+      return { from, to, event, action: action.name || 'no action name?' }
+    }
+  });
+
+  return JSON.stringify({ states: translatedStates, transitions: translatedTransitions })
 }
 
 // TODO : explain hierarchy, initial events, auto events, and other contracts
-// TODO : document the merge settings (+filter necessary on prototye)
+// TODO : document the obs merge settings (+filter necessary on prototye)
 /**
  * @typedef {Object} FSM_Def
  * @property {Object.<Control_State, *>} states Object whose every key is a control state admitted by the
@@ -846,9 +883,13 @@ function hasSameParent(pathA, pathB) {
  * @typedef {*} FSM_Settings
  *
  */
+/**
+ * @typedef {*} FSM_Model
+ *
+ */
 
 
-/*
+/* test plan
 Case non-hierarchical state machine :
 A -> B with event[ guard ] / action
 action -> {update state, output] | exception
