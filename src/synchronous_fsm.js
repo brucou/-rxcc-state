@@ -64,11 +64,32 @@ function isArrayUpdateOperations(obj) {
   return isEmptyArray(obj) || isArrayOf(isUpdateOperation)(obj)
 }
 
-function is_history_transition(transition){
+function is_history_transition(transition) {
   return transition.to.startsWith(HISTORY_PREFIX)
 }
 
-function format_transition_label(event, predicate, action) {
+function is_entry_transition(transition) {
+  return transition.event === INIT_EVENT
+}
+
+function is_from_control_state(controlState) {
+  return function (transition) {
+    return transition.from === controlState
+  }
+}
+
+function is_to_history_control_state_of(controlState){
+  return function(transition){
+    return is_history_control_state_of(controlState, transition.to)
+  }
+}
+
+function is_history_control_state_of(controlState, state){
+  return state.substring(HISTORY_PREFIX.length) === controlState
+}
+
+function format_transition_label(_event, predicate, action) {
+  const event = _event || '';
   return predicate && action
     ? `${event} [${predicate.name}] / ${action.name}`
     : predicate
@@ -78,15 +99,15 @@ function format_transition_label(event, predicate, action) {
         : `${event}`
 }
 
-function format_history_transition_state_name({from, to}){
-  return `${from}.${to}.${HISTORY_STATE_NAME}`
+function format_history_transition_state_name({ from, to }) {
+  return `${from}.${to.substring(HISTORY_PREFIX.length)}.${HISTORY_STATE_NAME}`
 }
 
-function get_all_transitions(transition){
-  const {from, event, guards} = transition;
+function get_all_transitions(transition) {
+  const { from, event, guards } = transition;
 
   return guards
-    ? guards.map(({predicate, to, action})=> ({from, event, predicate, to, action}))
+    ? guards.map(({ predicate, to, action }) => ({ from, event, predicate, to, action }))
     : [transition];
 }
 
@@ -95,8 +116,8 @@ function get_all_transitions(transition){
  * @param {String} str
  * @returns {String}
  */
-function displayName(str){
-  return str.replace('_', ' ')
+function displayName(str) {
+  return str.replace(/_/g, ' ')
 }
 
 // CONSTANTS
@@ -601,7 +622,7 @@ export function makeStreamingStateMachine(fsmDef, settings) {
   return computeActions
 }
 
-function generateStatePlantUmlHeader(state, optDisplayName){
+function generateStatePlantUmlHeader(state, optDisplayName) {
   return optDisplayName
     ? `state "${optDisplayName}" as ${state} <<NoContent>>`
     : `state "${displayName(state)}" as ${state} <<NoContent>>`
@@ -626,7 +647,6 @@ export function toPlantUml(fsmDef, settings) {
         index => pathMap.get(stringify(path.concat(index))),
         getChildrenNumber(tree, traversalState)
       );
-      debugger
       const translation = stateToPlantUML(controlState, childrenTranslation, transitions);
       pathMap.set(stringify(path), translation);
 
@@ -634,7 +654,7 @@ export function toPlantUml(fsmDef, settings) {
     }
   };
 
-  const translationMap = postOrderTraverseTree(objectTreeLenses, traverse, states);
+  const translationMap = postOrderTraverseTree(objectTreeLenses, traverse, { [INITIAL_STATE_NAME]: states });
 
   const mappedTree = translationMap.get('0');
   translationMap.clear();
@@ -655,6 +675,7 @@ function stateToPlantUML(controlState, childrenTranslation, transitions) {
     `${generateStatePlantUmlHeader(controlState, '')} {`,
     childrenTranslation.join('\n'),
     format_history_states(controlState, transitions),
+    format_entry_transitions(controlState, transitions),
     `}`,
     translate_transitions(controlState, transitions)
   ]
@@ -662,21 +683,18 @@ function stateToPlantUML(controlState, childrenTranslation, transitions) {
     .join('\n');
 }
 
-function format_history_states(controlState, transitions){
+function format_history_states(controlState, transitions) {
   // creates the history states as orig.dest.H
   // e.g.  state "H" as CD_stepping_forwards.CD_Loaded_Group.H <<NoContent>>
   const historyStatesObj = transitions.reduce((accTranslation, transition) => {
     const allTransitions = get_all_transitions(transition);
 
-    return allTransitions.reduce((acc, transition) => {
-      const {to, from} = transition;
-      if (is_history_transition(transition)){
-        acc[format_history_transition_state_name((transition))] = void 0;
+    return allTransitions
+      .filter(is_history_transition)
+      .filter(is_to_history_control_state_of(controlState))
+      .reduce((acc, transition) => {
+        acc[format_history_transition_state_name(transition)] = void 0;
         return acc
-      }
-      else {
-        return acc
-      }
     }, accTranslation)
   }, {});
   const historyStates = Object.keys(historyStatesObj);
@@ -687,76 +705,82 @@ function format_history_states(controlState, transitions){
 }
 
 function translate_transitions(controlState, transitions) {
-  const entryTransitionTranslation = format_entry_transitions(controlState, transitions);
   const historyTransitionTranslation = format_history_transitions(controlState, transitions);
   const standardTransitionTranslation = format_standard_transitions(controlState, transitions);
 
   return [
     historyTransitionTranslation,
-    entryTransitionTranslation,
     standardTransitionTranslation
   ]
     .filter(Boolean)
     .join('\n')
 }
 
-function format_standard_transitions(controlState, transitions){
-  return transitions.map(transition => {
+function format_standard_transitions(controlState, transitions) {
+  // The only transition from initial state are INIT transitions and that's already taken care of elsewhere
+  if (controlState === INITIAL_STATE_NAME) return ''
+  else return transitions.map(transition => {
     const allTransitions = get_all_transitions(transition)
 
     return allTransitions
-    // NOTE : Removing edge case of initial state, which is already dealt with as init states
-      .filter(transition => transition.from !== INITIAL_STATE_NAME)
-      .map(({from, event, predicate, to, action}) => {
-      return [
-        from,
-        TRANSITION_SYMBOL,
-        to,
-        TRANSITION_LABEL_START_SYMBOL,
-        format_transition_label(event, predicate, action),
-      ].join(' ')
-    });
+      .filter(is_from_control_state(controlState))
+      .filter(transition => !is_entry_transition(transition))
+      .filter(transition => !is_history_transition(transition))
+      .map(({ from, event, predicate, to, action }) => {
+        return [
+          from,
+          TRANSITION_SYMBOL,
+          to,
+          TRANSITION_LABEL_START_SYMBOL,
+          format_transition_label(event, predicate, action),
+        ].join(' ')
+      }).join('\n');
   })
+  // necessary because [].join('\n') is "" so I need to take those out to avoid unnecessary '\n' down the road
+    .filter(Boolean)
     .join('\n');
 }
 
-function format_entry_transitions(controlState, transitions){
+function format_entry_transitions(controlState, transitions) {
   const translation = transitions.reduce((accTranslation, transition) => {
     const allTransitions = get_all_transitions(transition);
 
-    return allTransitions.reduce((acc, transition) => {
-      const {to, predicate, action} = transition;
-      if (transition.event === INIT_EVENT){
+    return allTransitions
+      .filter(is_entry_transition)
+      .filter(is_from_control_state(controlState))
+      .reduce((acc, transition) => {
+        const { from, to, predicate, action } = transition;
         acc.push(
           `[*] ${TRANSITION_SYMBOL} ${to} ${TRANSITION_LABEL_START_SYMBOL} ${format_transition_label("", predicate, action)}`
         );
         return acc
-      }
-      else {
-        return acc
-      }
-    }, accTranslation)
+      }, accTranslation)
   }, []);
 
   return translation.join('\n')
 }
 
-function format_history_transitions(controlState, transitions){
+function format_history_transitions(controlState, transitions) {
+  // TODO : BAD BAD BAD
+  // TODO : remove history. from to name for formatting
   return transitions.map(transition => {
     const allTransitions = get_all_transitions(transition)
 
     return allTransitions
+      .filter(is_from_control_state(controlState))
       .filter(is_history_transition)
-      .map(({from, event, predicate, to, action}) => {
-      return [
-        from,
-        TRANSITION_SYMBOL,
-        format_history_transition_state_name({from, to}),
-        TRANSITION_LABEL_START_SYMBOL,
-        format_transition_label(event, predicate, action),
-      ].join(' ')
-    });
-  });
+      .map(({ from, event, predicate, to, action }) => {
+        return [
+          from,
+          TRANSITION_SYMBOL,
+          format_history_transition_state_name({ from, to }),
+          TRANSITION_LABEL_START_SYMBOL,
+          format_transition_label(event, predicate, action),
+        ].join(' ')
+      }).join('\n');
+  })
+    .filter(Boolean)
+    .join('\n');
 }
 
 /**
