@@ -25,6 +25,10 @@ import { objectTreeLenses, postOrderTraverseTree } from "fp-rosetree"
 const CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE =
   `Model update function must return valid update operations!`;
 const SEP = '.';
+const TRANSITION_SYMBOL = `-->`;
+const TRANSITION_LABEL_START_SYMBOL = `:`;
+const HISTORY_STATE_NAME = "H";
+const HISTORY_PREFIX = 'history.'
 
 // Ramda fns
 function always(x) {return x}
@@ -58,6 +62,41 @@ function isArrayOf(predicate) {return obj => Array.isArray(obj) && obj.every(pre
 
 function isArrayUpdateOperations(obj) {
   return isEmptyArray(obj) || isArrayOf(isUpdateOperation)(obj)
+}
+
+function is_history_transition(transition){
+  return transition.to.startsWith(HISTORY_PREFIX)
+}
+
+function format_transition_label(event, predicate, action) {
+  return predicate && action
+    ? `${event} [${predicate.name}] / ${action.name}`
+    : predicate
+      ? `${event} [${predicate.name}]}`
+      : action
+        ? `${event} / ${action.name}`
+        : `${event}`
+}
+
+function format_history_transition_state_name({from, to}){
+  return `${from}.${to}.${HISTORY_STATE_NAME}`
+}
+
+function get_all_transitions(transition){
+  const {from, event, guards} = transition;
+
+  return guards
+    ? guards.map(({predicate, to, action})=> ({from, event, predicate, to, action}))
+    : [transition];
+}
+
+/**
+ * 'this_name' => 'this name'
+ * @param {String} str
+ * @returns {String}
+ */
+function displayName(str){
+  return str.replace('_', ' ')
 }
 
 // CONSTANTS
@@ -562,6 +601,12 @@ export function makeStreamingStateMachine(fsmDef, settings) {
   return computeActions
 }
 
+function generateStatePlantUmlHeader(state, optDisplayName){
+  return optDisplayName
+    ? `state "${optDisplayName}" as ${state} <<NoContent>>`
+    : `state "${displayName(state)}" as ${state} <<NoContent>>`
+}
+
 /**
  * Converts a transducer definition to a textual format for interpretation by PlantUml tools
  * @param {FSM_Def} fsmDef
@@ -581,6 +626,7 @@ export function toPlantUml(fsmDef, settings) {
         index => pathMap.get(stringify(path.concat(index))),
         getChildrenNumber(tree, traversalState)
       );
+      debugger
       const translation = stateToPlantUML(controlState, childrenTranslation, transitions);
       pathMap.set(stringify(path), translation);
 
@@ -590,7 +636,7 @@ export function toPlantUml(fsmDef, settings) {
 
   const translationMap = postOrderTraverseTree(objectTreeLenses, traverse, states);
 
-  const mappedTree = translationMap.get(stringify(PATH_ROOT));
+  const mappedTree = translationMap.get('0');
   translationMap.clear();
 
   return mappedTree;
@@ -606,36 +652,111 @@ export function toPlantUml(fsmDef, settings) {
  */
 function stateToPlantUML(controlState, childrenTranslation, transitions) {
   return [
-    `state "${displayName(controlState)}" as ${controlState} <<NoContent>> {`,
+    `${generateStatePlantUmlHeader(controlState, '')} {`,
     childrenTranslation.join('\n'),
+    format_history_states(controlState, transitions),
     `}`,
-    translateTransitions(controlState, transitions)
-  ].join('\n');
-  // TODO : add history states!!
-  // state "{clean(controlState)}" as {controlState} <<NoContent>> {
-  //   {childrenTranslation}
-  // }
-  // INIT_TRANSITION? (i.e. [*] -> ...
-  // All transitions who starts with control states
-  // CD_Drawer_Closed--> CD_Drawer_Open: Eject
+    translate_transitions(controlState, transitions)
+  ]
+    .filter(x => x !== '\n' && x !== '')
+    .join('\n');
 }
 
-function translateTransitions(controlState, transitions) {
-  const entryTransitionTranslation = void 0; // TODO
-  // TODO same history if same origin-dest, only guard change, state "H" as orig-dest-hist, use a map when
-  // traversing transitiosn to have a single value for orig-dest history
-  const historyTransitionTranslation = void 0;
-  const standardTransitionTranslation = transitions.map(transition => {
-    // TODO
-  });
+function format_history_states(controlState, transitions){
+  // creates the history states as orig.dest.H
+  // e.g.  state "H" as CD_stepping_forwards.CD_Loaded_Group.H <<NoContent>>
+  const historyStatesObj = transitions.reduce((accTranslation, transition) => {
+    const allTransitions = get_all_transitions(transition);
+
+    return allTransitions.reduce((acc, transition) => {
+      const {to, from} = transition;
+      if (is_history_transition(transition)){
+        acc[format_history_transition_state_name((transition))] = void 0;
+        return acc
+      }
+      else {
+        return acc
+      }
+    }, accTranslation)
+  }, {});
+  const historyStates = Object.keys(historyStatesObj);
+
+  return historyStates.map(historyState => {
+    return `${generateStatePlantUmlHeader(historyState, HISTORY_STATE_NAME)}`
+  }).join('\n')
+}
+
+function translate_transitions(controlState, transitions) {
+  const entryTransitionTranslation = format_entry_transitions(controlState, transitions);
+  const historyTransitionTranslation = format_history_transitions(controlState, transitions);
+  const standardTransitionTranslation = format_standard_transitions(controlState, transitions);
 
   return [
-    entryTransitionTranslation,
     historyTransitionTranslation,
-    standardTransitionTranslation.join('\n')
+    entryTransitionTranslation,
+    standardTransitionTranslation
   ]
     .filter(Boolean)
     .join('\n')
+}
+
+function format_standard_transitions(controlState, transitions){
+  return transitions.map(transition => {
+    const allTransitions = get_all_transitions(transition)
+
+    return allTransitions
+    // NOTE : Removing edge case of initial state, which is already dealt with as init states
+      .filter(transition => transition.from !== INITIAL_STATE_NAME)
+      .map(({from, event, predicate, to, action}) => {
+      return [
+        from,
+        TRANSITION_SYMBOL,
+        to,
+        TRANSITION_LABEL_START_SYMBOL,
+        format_transition_label(event, predicate, action),
+      ].join(' ')
+    });
+  })
+    .join('\n');
+}
+
+function format_entry_transitions(controlState, transitions){
+  const translation = transitions.reduce((accTranslation, transition) => {
+    const allTransitions = get_all_transitions(transition);
+
+    return allTransitions.reduce((acc, transition) => {
+      const {to, predicate, action} = transition;
+      if (transition.event === INIT_EVENT){
+        acc.push(
+          `[*] ${TRANSITION_SYMBOL} ${to} ${TRANSITION_LABEL_START_SYMBOL} ${format_transition_label("", predicate, action)}`
+        );
+        return acc
+      }
+      else {
+        return acc
+      }
+    }, accTranslation)
+  }, []);
+
+  return translation.join('\n')
+}
+
+function format_history_transitions(controlState, transitions){
+  return transitions.map(transition => {
+    const allTransitions = get_all_transitions(transition)
+
+    return allTransitions
+      .filter(is_history_transition)
+      .map(({from, event, predicate, to, action}) => {
+      return [
+        from,
+        TRANSITION_SYMBOL,
+        format_history_transition_state_name({from, to}),
+        TRANSITION_LABEL_START_SYMBOL,
+        format_transition_label(event, predicate, action),
+      ].join(' ')
+    });
+  });
 }
 
 /**

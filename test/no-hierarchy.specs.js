@@ -18,7 +18,7 @@ const default_settings = {
   subject_factory: function () {return new Rx.Subject()},
   merge : Rx.Observable.merge
 };
-const FALSE_GUARD = function always_false(action) {return [{predicate:F, to : undefined, action}]};
+const FALSE_GUARD = function always_false(action, state) {return [{predicate:F, to : state, action}]};
 const TRUE_GUARD = function always_true(to, action) { return [{predicate:T, to, action}]};
 
 const NO_ACTION = null;
@@ -124,7 +124,7 @@ QUnit.test("INIT event, no action, false guard", function exec_test(assert) {
     states: { A: '' },
     events: [],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: F, action: NO_ACTION }
+      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, guards: FALSE_GUARD(NO_ACTION, 'A')}
     ],
     initial_extended_state: model_initial
   };
@@ -140,7 +140,7 @@ QUnit.test("INIT event, no action, true guard", function exec_test(assert) {
     states: { A: '' },
     events: [],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: T, action: NO_ACTION }
+      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, guards: TRUE_GUARD('A', NO_ACTION)}
     ],
     initial_extended_state: model_initial
   };
