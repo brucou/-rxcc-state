@@ -87,6 +87,7 @@ Note that if we add concurrency and messaging (broadcast) to extended hierarchic
  peer-to-peer/publish-subscribe, preemption/cooperation, etc.)
 
 # Install
+**TODO**
 
 # API
 ## API design
@@ -173,8 +174,10 @@ itself (it performs no effects), it computes which screen to display according t
 
 ### CD drawer example
 This example is taken from Ian Horrock's seminal book on statecharts and is the specification of
- a CD player. It features advanced characteristics of hierarchical state machines, including 
- history states, composite states, transient states, automatic transitions, and entry points.
+ a CD player. The behaviour of the CD player is pretty straight forward and understandable 
+ immediately from the visualization. From a didactical point of view, the example serve to feature 
+ advanced characteristics of hierarchical state machines,  including history states, composite states, 
+ transient states, automatic transitions, and entry points.
  
 ![cd player state chart](http://i.imgur.com/ygsOVi9.jpg)
 
@@ -352,17 +355,18 @@ transition must be configured and be executed between the initial control state 
 Automated tests are so far incomplete. Most tests have been run manually. To run the 
 current automated test, type in a terminal : `npm run test`
 
-# State machine visualization
+# Visualization tools
 We have included two helpers for visualization of the state transducer :
 
 - conversion to plantUML : `toPlantUml :: FSM_Def -> PlantUml`.
   - the resulting chain of characters can be pasted in [plantText](`https://www.planttext.com/`) 
   or [planUML previewer](http://sujoyu.github.io/plantuml-previewer/) to get an automated graph 
   representation. Both will produce the exact same visual representation.
-- [online visualizer](https://github.com/brucou/state-transducer-visualizer) (dagre layout 
-engine) : for instructions, cf. github directory 
+- conversion to [online visualizer](https://github.com/brucou/state-transducer-visualizer) format 
+(dagre layout engine) : for instructions, cf. github directory : `toDagreVisualizerFormat :: 
+FSM_Def -> JSON`
 
-Automated visualization works fine with simple graphs, but seems to encounter trouble to generate
+Automated visualization works well with simple graphs, but seems to encounter trouble to generate
  optimally satisfying complex graphs. The Dagre layout seems to be a relatively good option. 
 
 # References
@@ -370,16 +374,3 @@ Automated visualization works fine with simple graphs, but seems to encounter tr
 
 # Possible improvements
 - any ideas? Post an issue!
-
-# Definitions
-DEFINITION 2.1 A sequential machine M is an algebraic system
-defined as follows: $M = (I, S, O, ~, ~)$, where:
-
-- $I$ - a finite non-empty set of inputs,
-- $S$ - a finite non-empty set of internal states,
-- $O$ - a finite set of outputs,
-- $\delta$ - the next-state function: $\delta : SxI \rightarrow S$,
-- $\lambda$ - the output function, ~: SxI -7 0 (a Mea~y machine), or ~: S -7 0 (a Moore machine).
-
-When an output set 0 and the output function ~ are not defined,
-the sequential machine M = (I, S, ~) is called a state machine. 

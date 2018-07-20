@@ -594,7 +594,8 @@ export function create_state_machine(fsmDef, settings) {
 /**
  *
  * @param {FSM_Def} fsmDef
- * @param {{subject_factory: Function, merge: Function}} settings Contains the `merge` property as mandatory
+ * @param {{subject_factory: Function, merge: Function, of:Function}} settings Contains the `merge` property as
+ * mandatory
  * settings. That merge function must take an array of observables and return an observable.
  * Otherwise can also hold extra settings the API user wants to make available in state machine's scope
  * @returns {function(Object<String, Rx.Observable>): *}
@@ -602,7 +603,8 @@ export function create_state_machine(fsmDef, settings) {
 export function makeStreamingStateMachine(fsmDef, settings) {
   const fsm = create_state_machine(fsmDef, settings);
   const merge = settings && settings.merge;
-  if (!merge) throw `makeStreamingStateMachine : could not find an observable merge function! use Rx.Observable.merge??`
+  const of = settings && settings.of;
+  if (!merge || !of) throw `makeStreamingStateMachine : could not find an observable merge or of functions ! use Rx??`
 
   /**
    * @param {Object.<Event_Label, Rx.Observable>} events A mapping of event labels to the corresponding event sources
@@ -611,6 +613,9 @@ export function makeStreamingStateMachine(fsmDef, settings) {
    */
   const computeActions = function computeActions(events) {
     return merge(
+      // Contract : the `merge` function must subscribe to its source parameters in order of appearance
+      // This ensures that the init event is indeed processed always before the other events
+      of({[INIT_EVENT] : fsmDef.initial_extended_state}),
       keys(events).map(eventLabel => {
         const eventSource$ = events[eventLabel];
         return eventSource$.map(eventData => fsm.yield({ [eventLabel]: eventData }))
@@ -642,7 +647,8 @@ export function toPlantUml(fsmDef, settings) {
     seed: () => Map,
     visit: (pathMap, traversalState, tree) => {
       const { path } = traversalState.get(tree);
-      const controlState = getLabel(tree).key;
+      const treeLabel = getLabel(tree);
+      const controlState = Object.keys(treeLabel)[0];
       const childrenTranslation = times(
         index => pathMap.get(stringify(path.concat(index))),
         getChildrenNumber(tree, traversalState)
@@ -761,8 +767,6 @@ function format_entry_transitions(controlState, transitions) {
 }
 
 function format_history_transitions(controlState, transitions) {
-  // TODO : BAD BAD BAD
-  // TODO : remove history. from to name for formatting
   return transitions.map(transition => {
     const allTransitions = get_all_transitions(transition)
 
@@ -796,12 +800,12 @@ export function toDagreVisualizerFormat(fsmDef) {
     seed: () => Map,
     visit: (pathMap, traversalState, tree) => {
       const { path } = traversalState.get(tree);
-      const controlState = getLabel(tree).key;
+      const treeLabel = getLabel(tree);
+      const controlState = Object.keys(treeLabel)[0];
       const children = times(
         index => pathMap.get(stringify(path.concat(index))),
         getChildrenNumber(tree, traversalState)
       );
-      debugger
       pathMap.set(stringify(path), constructTree(controlState, children));
 
       return pathMap;
@@ -809,7 +813,6 @@ export function toDagreVisualizerFormat(fsmDef) {
   };
 
   const _translatedStates = postOrderTraverseTree(objectTreeLenses, traverse, { [INITIAL_STATE_NAME]: states });
-  debugger
   const translatedStates = _translatedStates.get('0');
 
   const translatedTransitions = transitions.map(transition => {
@@ -830,8 +833,8 @@ export function toDagreVisualizerFormat(fsmDef) {
   return JSON.stringify({ states: translatedStates, transitions: translatedTransitions })
 }
 
-// TODO : explain hierarchy, initial events, auto events, and other contracts
-// TODO : document the obs merge settings (+filter necessary on prototye)
+// TODO DOC: explain hierarchy, initial events, auto events, and other contracts
+// TODO DOC: document the obs merge settings (+filter necessary on prototype)
 /**
  * @typedef {Object} FSM_Def
  * @property {Object.<Control_State, *>} states Object whose every key is a control state admitted by the
@@ -904,7 +907,7 @@ guard -> [T, F, exception]
     Transitions in [pick two states in States possibly the same]
 
 So stage 1 : input generation
-  Stage 2 : for the generated input, guess the right result and then check vs. actual run
+   Stage 2 : for the generated input, guess the right result and then check vs. actual run
 
 Edge case : malformed state machine : write checker of well-formed (to test too then...)
 

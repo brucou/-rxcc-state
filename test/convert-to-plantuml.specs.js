@@ -147,6 +147,7 @@ state "B" as B <<NoContent>> {
 });
 
 QUnit.test("History states, entry states, standard states, and all transitions : CD player", function exec_test(assert) {
+  debugger
   function identity() {}
 
   function fsm_initialize_model() {}

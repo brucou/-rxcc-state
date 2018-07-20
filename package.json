@@ -46,6 +46,6 @@
   },
   "dependencies": {
     "fast-json-patch": "^2.0.0",
-    "fp-rosetree": "^0.4.2"
+    "fp-rosetree": "^0.4.3"
   }
 }
