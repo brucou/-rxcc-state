@@ -77,15 +77,30 @@ predefined control states (state machine part), and an encapsulated memory which
 modified through actions guarded by predicates (extended part).
 
 Note that if we add concurrency and messaging (broadcast) to extended hierarchical state machines,
- we get a statechart. We made the decision to discard any concurrency mechanism and broadcast mechanism for
- two reasons :
+ we get a statechart. We made the decision to discard any concurrency mechanism and broadcast  
+ mechanism for two reasons :
  
- - these are arguably the weak point of statecharts, specially when it comes to readability, and 
- coherent semantics 
- - we want to give the library user the possibility to choose its own concurrency and 
- messaging semantics (sync/async, deterministic/non-deterministic, queued/unqueued, 
+ - the statechart concurrency model cannot be extended (violating the open-closed principle). We 
+ want to give the library user the possibility to choose its own concurrency and messaging 
+ semantics (sync/async, deterministic/non-deterministic, queued/unqueued,  
  peer-to-peer/publish-subscribe, preemption/cooperation, etc.)
+- concurrent state machines with significant cross-machine messaging are better developed with a
+ (text-based) concurrency-oriented paradigm (CSP, etc.). The statechart graphical representation of 
+ such machines can be hard to reason about. In short when the reactive system under study is 
+ concurrency-driven, a concurrency-specialized paradigm provides more benefits. When that 
+ reactive system is primarily control-driven, a statechart/state machine can be a better tool.
+- statecharts have historically stumbled on the concurrency semantics, with more than 20 
+different semantics being proposed. Understanding precisely a given statechart (Rhapsody, 
+Statemate, VisualMate, UML, etc.) hence may require a complete understanding of the chosen 
+semantics (micro-steps, broadcast rules, etc.).
+- statecharts propose activities and actions, leading to complecting action management with 
+control flow
+- a hierarchical automata already ocvers a large set of encountered use cases, has few 
+simple rules, the desired concurrency can be added in any suitable form, and does 
+not realize any effects : it is easy to combine and reuse and extend and reason about. 
 
+NOTE: Too long put that in a separate section
+ 
 # Install
 **TODO**
 
@@ -117,8 +132,8 @@ to the state machine object). As such, the transducer is a black-box, and only i
 unwanted direct modification of the extended state
 - no restriction is made on output of transducers, but inputs must follow some conventions (if a
  machine's output match those conventions, two such machines can be composed by passing the 
- output of a yield from the firs machine as an input to the second machine)
-- reactive programming is enabled by exposing a pure function of an input stream, which run the 
+ output of a yield from the first machine as an input to the second machine)
+- reactive programming is enabled by exposing a pure function of an input stream, which runs the 
 transducer for each incoming input, thus generating a sequence of outputs
 
 Concretely, our state transducer will be created by the factory function `create_state_machine`, 
@@ -127,11 +142,12 @@ which returns a state transducer which :
 - must be started manually (with `.start()`), and configured with an initial event and transition 
 - will compute an output for any input that is sent to it (with `.yield(input)`)
 
-The state transducer is not, in general, a pure function of its inputs. However a given output of
- the transducer depends exclusively on the sequence of inputs it has received so far. This means 
- that it is possible to associate to a state transducer another function which takes a sequence of
-  inputs into a sequence of outputs, in a way that that function is pure. 
-  
+The state transducer is not, in general, a pure function of its inputs. However, a given output of
+ the transducer depends exclusively on the sequence of inputs it has received so far ([causality 
+ property](https://en.wikipedia.org/wiki/Causal_system)). This means that it is possible to  
+ associate to a state transducer another function which takes a sequence of inputs into a 
+ sequence of outputs, in a way that that function is pure. 
+
 We provide a way to construct such a function with the `makeStreamingStateMachine` factory to 
 create a stream transducer, which translates an input stream into an output stream.
 
