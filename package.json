@@ -15,6 +15,10 @@
   ],
   "module": "src/index.js",
   "main": "dist/transducer.umd.js",
+  "files": [
+    "src/",
+    "dist/"
+  ],
   "scripts": {
     "serve": "nodemon index.js --exec babel-node",
     "start": "watchify -d --transform babelify dist-node -o src/bundle.js -v",
