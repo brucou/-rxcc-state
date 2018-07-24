@@ -1,11 +1,9 @@
 import * as QUnit from "qunitjs"
 import * as Rx from "rx"
-// TODO : review tests - also tests that the initial model is never modified
-// TODO : add merge function when testing streaming library
 import { clone, F, merge, T } from "ramda"
 import {
   create_state_machine, INIT_EVENT, INITIAL_STATE_NAME, NO_OUTPUT
-} from "../src/synchronous_fsm"
+} from "../src"
 import { applyPatch } from "fast-json-patch"
 
 function spy_on_args(fn, spy_fn) {

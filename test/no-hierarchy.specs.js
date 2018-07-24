@@ -3,7 +3,7 @@ import * as Rx from "rx"
 import { clone, F, merge, T } from "ramda"
 import {
   create_state_machine, INIT_EVENT, INITIAL_STATE_NAME, NO_OUTPUT
-} from "../src/synchronous_fsm"
+} from "../src"
 import {applyPatch} from "fast-json-patch"
 
 function spy_on_args(fn, spy_fn) {
@@ -28,11 +28,6 @@ const EVENT1_DATA = {
 }
 const a_value = "some value";
 const another_value = "another value";
-const an_object_value = {
-  objKey1: 'objValue1',
-  objKey2: 'objValue2',
-  objKey3: 'objValue3',
-};
 const an_output = {
   outputKey1: 'outputValue1'
 };

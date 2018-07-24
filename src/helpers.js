@@ -1,6 +1,5 @@
 // Ramda fns
-import { HISTORY_PREFIX, HISTORY_STATE_NAME, CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE, SEP, TRANSITION_SYMBOL, TRANSITION_LABEL_START_SYMBOL, INITIAL_STATE_NAME, INIT_EVENT, AUTO_EVENT,default_action_result, NO_MODEL_UPDATE, NO_OUTPUT, STATE_PROTOTYPE_NAME } from "./properties"
-import {is_entry_transition, is_from_control_state, is_history_transition, format_transition_label, always, assertContract, format_history_transition_state_name, get_all_transitions, is_history_control_state_of, is_to_history_control_state_of , isArrayOf, isArrayUpdateOperations, isBoolean, isEmptyArray, isUpdateOperation, keys, displayName} from './helpers'
+import { CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE, HISTORY_PREFIX, HISTORY_STATE_NAME, INIT_EVENT } from "./properties"
 import { applyPatch } from "fast-json-patch/lib/duplex"
 
 /**

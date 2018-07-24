@@ -18,10 +18,10 @@
 // basically simulate a Maybe Input -> Maybe Output
 // TODO : as a isActualOutput function to discriminate out the Maybe
 
-import { applyPatch } from "fast-json-patch"
-import { arrayTreeLenses, objectTreeLenses, postOrderTraverseTree } from "fp-rosetree"
-import { HISTORY_PREFIX, HISTORY_STATE_NAME, CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE, SEP, TRANSITION_SYMBOL, TRANSITION_LABEL_START_SYMBOL, INITIAL_STATE_NAME, INIT_EVENT, AUTO_EVENT,default_action_result, NO_MODEL_UPDATE, NO_OUTPUT, STATE_PROTOTYPE_NAME } from "./properties"
-import {is_entry_transition, is_from_control_state, is_history_transition, format_transition_label, always, assertContract, format_history_transition_state_name, get_all_transitions, is_history_control_state_of, is_to_history_control_state_of , isArrayOf, isArrayUpdateOperations, isBoolean, isEmptyArray, isUpdateOperation, keys, displayName, applyUpdateOperations, times, wrap, get_fn_name} from './helpers'
+import {
+  AUTO_EVENT, default_action_result, INIT_EVENT, INITIAL_STATE_NAME, NO_OUTPUT, STATE_PROTOTYPE_NAME
+} from "./properties"
+import { applyUpdateOperations, get_fn_name, keys, wrap } from './helpers'
 
 /**
  * Takes a list of identifiers (strings), adds init to it, and returns a hash whose properties are
@@ -478,7 +478,7 @@ export function makeStreamingStateMachine(settings, fsmDef) {
         return eventSource$.map(eventData => fsm.yield({ [eventLabel]: eventData }))
       })
     )
-      .filter(Boolean)
+      .filter(output => output != NO_OUTPUT)
   }
 
   return computeActions

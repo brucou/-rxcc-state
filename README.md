@@ -80,6 +80,8 @@ Note that if we add concurrency and messaging (broadcast) to extended hierarchic
  we get a statechart. We made the decision to discard any concurrency mechanism and broadcast  
  mechanism for two reasons :
  
+ - if there are no parallel regions, a statechart is basically a hierarchical state transducer. 
+ That already addresses a large class of computations!
  - the statechart concurrency model cannot be extended (violating the open-closed principle). We 
  want to give the library user the possibility to choose its own concurrency and messaging 
  semantics (sync/async, deterministic/non-deterministic, queued/unqueued,  
