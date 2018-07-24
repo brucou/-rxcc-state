@@ -93,8 +93,8 @@ Note that if we add concurrency and messaging (broadcast) to extended hierarchic
  reactive system is primarily control-driven, a statechart/state machine can be a better tool.
 - statecharts have historically stumbled on the concurrency semantics, with more than 20 
 different semantics being proposed. Understanding precisely a given statechart (Rhapsody, 
-Statemate, VisualMate, UML, etc.) hence may require a complete understanding of the chosen 
-semantics (micro-steps, broadcast rules, etc.).
+Statemate, VisualMate, StateFlow, UML, etc.) hence may require a complete understanding of the 
+chosen semantics (micro-steps, broadcast rules, etc.).
 - statecharts propose activities and actions, leading to complecting action management with 
 control flow
 - a hierarchical automata already ocvers a large set of encountered use cases, has few 

@@ -1,6 +1,7 @@
 // Ramda fns
 import { CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE, HISTORY_PREFIX, HISTORY_STATE_NAME, INIT_EVENT } from "./properties"
-import { applyPatch } from "fast-json-patch/lib/duplex"
+// import { applyPatch } from "./fast-json-patch/duplex"
+import { applyPatch } from "json-patch-es6"
 
 /**
  * Returns the name of the function as taken from its source definition.

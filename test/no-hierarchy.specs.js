@@ -4,7 +4,7 @@ import { clone, F, merge, T } from "ramda"
 import {
   create_state_machine, INIT_EVENT, INITIAL_STATE_NAME, NO_OUTPUT
 } from "../src"
-import {applyPatch} from "fast-json-patch"
+import {applyPatch} from "json-patch-es6"
 
 function spy_on_args(fn, spy_fn) {
   return function spied_on(...args) {

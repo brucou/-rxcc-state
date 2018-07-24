@@ -1,0 +1,25 @@
+{
+  "name": "state-transducer",
+  "version": "0.0.1",
+  "description": "Extended Hierarchical State Transducer library",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brucou"
+  },
+  "keywords": [
+    "rxjs",
+    "state-machine",
+    "state-transducer",
+    "automaton",
+    "automata"
+  ],
+  "scripts": {
+    "umd": "rollup --sourcemap -c rollup.config.js",
+    "test-jsonpatch": "npm run test-core && npm run test-duplex",
+    "test-core": "jasmine  DUPLEX=no JASMINE_CONFIG_PATH=jasmine.json test/spec/jsonPatchTestsSpec.js test/spec/coreSpec.js test/spec/validateSpec.js",
+    "test-duplex": "jasmine DUPLEX=yes JASMINE_CONFIG_PATH=test/jasmine.json"
+  },
+  "engines": {
+    "node": "6.3.0"
+  }
+}
