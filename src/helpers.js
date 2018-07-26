@@ -1,5 +1,7 @@
 // Ramda fns
-import { CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE, HISTORY_PREFIX, HISTORY_STATE_NAME, INIT_EVENT } from "./properties"
+import {
+  CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE, HISTORY_PREFIX, HISTORY_STATE_NAME, INIT_EVENT, NO_OUTPUT
+} from "./properties"
 // import { applyPatch } from "./fast-json-patch/duplex"
 import { applyPatch } from "json-patch-es6"
 
@@ -120,7 +122,68 @@ export function get_all_transitions(transition) {
  * @param {String} str
  * @returns {String}
  */
-export function displayName(str) {
+export function getDisplayName(str) {
   return str.replace(/_/g, ' ')
 }
 
+/**
+ * This function MERGES model updates. That means that given two model updates, the resulting model update will be
+ * the concatenation of the two, in the order in which they are passed
+ * @param {function[]}  arrayUpdateFns
+ * @returns {function(*=, *=, *=): {model_update: *}}
+ */
+export function mergeModelUpdates(arrayUpdateFns) {
+  // TODO write just like [].concat(...arrayModelUpdates), array..Updates = arrayActions.map(x => x.model_update || []);
+  return function (model, eventData, settings) {
+    return {
+      model_update: arrayUpdateFns.reduce((acc, updateFn) => {
+        const update = updateFn(model, eventData, settings).model_update;
+        if (update) {
+          return acc.concat(update)
+        }
+        else {
+          return acc
+        }
+      }, [])
+    }
+  }
+}
+
+/**
+ * This function CHAINS model updates, in the order in which they are passed. It is thus similar to a pipe.
+ * The second update function receives the model updated by the first update function.
+ * @param {function[]}  arrayUpdateFns
+ */
+export function chainModelUpdates(arrayUpdateFns) {
+  return function (model, eventData, settings) {
+    return {
+      model_update: arrayUpdateFns
+        .reduce((acc, updateFn) => {
+          const { model, model_update } = acc;
+          const update = updateFn(model, eventData, settings).model_update;
+          const updatedModel = applyUpdateOperations(model, model_update)
+
+          return { model: updatedModel, model_update: update }
+        }, { model, model_update: [] })
+        .model_update || []
+    }
+  }
+}
+
+function defaultMerge(arrayOutputs) {
+  return arrayOutputs.length === 0 ? NO_OUTPUT : Object.assign({}, ...arrayOutputs)
+}
+
+export function mergeActionFactories(mergeFn, arrayActionFactory) {
+  return function (model, eventData, settings) {
+    const arrayActions = arrayActionFactory.map(factory => factory(model, eventData, settings));
+    const arrayModelUpdates = arrayActions.map(x => x.model_update || []);
+    const arrayOutputs = arrayActions.map(x => x.output || {});
+
+    return {
+      model_update: [].concat(...arrayModelUpdates),
+      // for instance, mergeFn = R.mergeAll or some variations around R.mergeDeepLeft
+      output: (mergeFn || defaultMerge)(arrayOutputs)
+    }
+  }
+}

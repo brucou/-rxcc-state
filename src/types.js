@@ -19,7 +19,8 @@
  * @typedef {function(model:*, event_data:*, settings:FSM_Settings) : Actions} ActionFactory
  */
 /**
- * @typedef {{model_update : Array<JSON_Patch_Operation>, output : *}} Actions The actions to be performed by the
+ * @typedef {{model_update : Array<JSON_Patch_Operation>, output : Machine_Output}} Actions The actions to be performed
+ * by the
  * state machine in response to a transition. `model_update` represents the state update for the variables
  * of the extended state machine. `output` represents the output of the state machine passed to the API caller.
  */
@@ -53,3 +54,4 @@
  * @typedef {*} FSM_Model
  *
  */
+/** @typedef {*} Machine_Output well it is prefertable that that be an object instead of a primitive */

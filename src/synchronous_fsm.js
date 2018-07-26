@@ -22,6 +22,7 @@ import {
   AUTO_EVENT, default_action_result, INIT_EVENT, INITIAL_STATE_NAME, NO_OUTPUT, STATE_PROTOTYPE_NAME
 } from "./properties"
 import { applyUpdateOperations, get_fn_name, keys, wrap } from './helpers'
+import { objectTreeLenses, preorderTraverseTree } from "fp-rosetree"
 
 /**
  * Takes a list of identifiers (strings), adds init to it, and returns a hash whose properties are
@@ -472,7 +473,7 @@ export function makeStreamingStateMachine(settings, fsmDef) {
     return merge(
       // Contract : the `merge` function must subscribe to its source parameters in order of appearance
       // This ensures that the init event is indeed processed always before the other events
-      of({[INIT_EVENT] : fsmDef.initial_extended_state}),
+      of({ [INIT_EVENT]: fsmDef.initial_extended_state }),
       keys(events).map(eventLabel => {
         const eventSource$ = events[eventLabel];
         return eventSource$.map(eventData => fsm.yield({ [eventLabel]: eventData }))
@@ -482,6 +483,122 @@ export function makeStreamingStateMachine(settings, fsmDef) {
   }
 
   return computeActions
+}
+
+/**
+ * // TODO test
+ * Adds a `displayName` property corresponding to the action name to all given action factories. The idea is to use
+ * the action name in some specific useful contexts (debugging, tracing, visualizing)
+ * @param {Object.<string, function>} namedActionSpecs Maps an action name to an action factory
+ */
+export function makeNamedActionsFactory(namedActionSpecs) {
+  return Object.keys(namedActionSpecs).reduce((acc, actionName) => {
+    const actionFactory = namedActionSpecs[actionName];
+    actionFactory.displayName = actionName;
+    acc[actionName] = actionFactory
+
+    return acc
+  }, {})
+}
+
+/**
+ * @param  {Object.<string, function>} entryActions Adds an action to be processed when entering a given state
+ * @param  {FSM_Def} fsmDef Maps an action name to an action factory
+ * @param {function (Machine_Output, Machine_Output) : Machine_Output} mergeOutputFn monoidal merge (pure) function
+ * to be provided to instruct how to combine machine outputs. Beware that the second output corresponds to the entry
+ * action output which must logically correspond to a processing as if it were posterior to the first output. In
+ * many cases, that will mean that the second machine output has to be 'last', whatever that means for the monoid
+ * and application in question
+ */
+export function decorateWithEntryActions(fsmDef, entryActions, mergeOutputFn) {
+  // will modify transitions.actions keeping the display name intact
+  const { transitions: origTransitions, states } = fsmDef;
+  const lenses = objectTreeLenses;
+  const { getChildren, constructTree, getLabel } = objectTreeLenses;
+  const traverse = {
+    seed: {},
+    visit: (accStateList, traversalState, tree) => {
+      const treeLabel = getLabel(tree);
+      const controlState = Object.keys(treeLabel)[0];
+      accStateList[controlState] = '';
+
+      return accStateList;
+    }
+  };
+  const stateHashMap = preorderTraverseTree(lenses, traverse, states);
+  const isValidEntryActions = Object.keys(entryActions).every(controlState => {
+    return stateHashMap[controlState] != null
+  });
+
+  if (!isValidEntryActions) {
+    throw `decorateWithEntryActions : found control states for which entry actions are defined, and yet do not exist in the state machine!`
+  }
+  else {
+    const decoratedTransitions = origTransitions.map(transitionRecord => {
+      const { from, event, guards } = transitionRecord;
+
+      return {
+        from,
+        event,
+        guards: guards.map(transitionGuard => {
+          const { predicate, to, action } = transitionGuard;
+          const entryAction = entryActions[to];
+
+          return {
+            predicate,
+            to,
+            action: entryAction
+              ? decorateWithExitAction(action, entryAction, mergeOutputFn)
+              : action
+          }
+        })
+      }
+
+
+    });
+
+    return Object.assign({}, fsmDef, { transitions: decoratedTransitions })
+  }
+
+}
+
+/**
+ *
+ * @param {ActionFactory} action action factory which may be associated to a display name
+ * @param {ActionFactory} entryAction
+ * @param {function (Machine_Output, Machine_Output) : Machine_Output} mergeOutputFn monoidal merge function. Cf. decorateWithEntryActions
+ * @return ActionFactory
+ */
+function decorateWithExitAction(action, entryAction, mergeOutputFn) {
+  // NOTE : An entry action is modelized by an exit action, i.e. an action which will be processed last after any
+  // others which apply. Because in the transducer semantics there is nothing happening after the transition is
+  // processed, or to express it differently, transition and state entry are simultaneous, this modelization is
+  // accurate.
+  // DOC : entry actions for a control state will apply before any automatic event related to that state! In fact before
+  // anything. That means the automatic event should logically receive the state updated by the entry action TODO :
+  // test it!
+  const decoratedAction = function (model, eventData, settings) {
+    const actionResult = action(model, eventData, settings);
+    const actionUpdate = actionResult.model_update;
+    const updatedModel = applyUpdateOperations(model, actionUpdate);
+    const exitActionResult = entryAction(updatedModel, eventData, settings);
+
+    // NOTE : exitActionResult comes last as we want it to have priority over other actions.
+    // As a matter of fact, it is an exit action, so it must always happen on exiting, no matter what
+    //
+    // ADR :  Beware of the fact that as a result it could overwrite previous actions. In principle exit actions should
+    //        add to existing actions, not overwrite. Because exit actions are not represented on the machine
+    //        visualization, having exit actions which overwrite other actions might make it hard to reason about the
+    //        visualization. We choose however to not forbid the overwrite by contract. But beware.
+    // ROADMAP : the best is, according to semantics, to actually send both separately
+    return {
+      model_update: [].concat(actionUpdate || [], exitActionResult.model_update || []),
+      output: Object.assign({}, actionResult.output || {}, exitActionResult.output || {})
+    }
+  };
+  decoratedAction.displayName = action.displayName;
+
+  return decoratedAction
 }
 
 // TODO DOC: explain hierarchy, initial events, auto events, and other contracts

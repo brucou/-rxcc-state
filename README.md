@@ -8,8 +8,9 @@ functions, however have the following interesting properties :
 around a finite, fixed set of control states
 
 These computations can often be modelized advantageously[^1] by a class of state machines called 
-hierarchical extended state producer. This library offers a way to define, and use such class of
- state machines.
+hierarchical extended state transducer. This library offers a way to define, and use such class of
+ state machines. We will come back on the meaning of the fancy name, but in short a state 
+ transducer is a state machine which may produce outputs.
 
 The major motivation for this library has been the specification and implementation of user 
 interfaces. As a matter of fact, to [every user interface can be associated a computation](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata) 
@@ -19,6 +20,8 @@ often has a logic [organized around a limited set of control states](#base-examp
 However, it is a very general tool, that have found miscellaneous applications in different 
 contexts :
 
+- well, ES6 generators are transpiled to ES5 state transducers when there is no native support
+ in browser (at least that was facebook's [`regenerator`](https://github.com/facebook/regenerator)  is doing)
 - user interface specification and implementation for embedded systems
 - [model-based testing, and test input generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf)
 - AI's decision making in games
@@ -27,7 +30,7 @@ Concretely, we have so far successfully used this library :
 
 - in [multi-steps workflows](https://github.com/brucou/component-combinators/tree/master/examples/volunteerApplication), a constant feature of enterprise software today
 - for ['smart' synchronous streams](https://github.com/brucou/partial-synchronous-streams), which
- avoid useless (re-)computations
+ tracks computation state to avoid useless re-computations
 - to implement cross-domain communication protocols
 
 In such cases, we were able to modelize our computation with an Extended Hierarchical State Transducer 

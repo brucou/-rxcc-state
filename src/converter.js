@@ -2,7 +2,7 @@ import {
   HISTORY_STATE_NAME, INITIAL_STATE_NAME, SEP, TRANSITION_LABEL_START_SYMBOL, TRANSITION_SYMBOL
 } from "./properties"
 import {
-  displayName, format_history_transition_state_name, format_transition_label, get_all_transitions, is_entry_transition,
+  getDisplayName, format_history_transition_state_name, format_transition_label, get_all_transitions, is_entry_transition,
   is_from_control_state, is_history_transition, is_to_history_control_state_of, times
 } from './helpers'
 import { arrayTreeLenses, objectTreeLenses, postOrderTraverseTree } from "fp-rosetree"
@@ -10,7 +10,7 @@ import { arrayTreeLenses, objectTreeLenses, postOrderTraverseTree } from "fp-ros
 function generateStatePlantUmlHeader(state, optDisplayName) {
   return optDisplayName
     ? `state "${optDisplayName}" as ${state} <<NoContent>>`
-    : `state "${displayName(state)}" as ${state} <<NoContent>>`
+    : `state "${getDisplayName(state)}" as ${state} <<NoContent>>`
 }
 
 /**
