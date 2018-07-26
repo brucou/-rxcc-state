@@ -502,16 +502,15 @@ export function makeNamedActionsFactory(namedActionSpecs) {
 
 /**
  * @param  {Object.<string, function>} entryActions Adds an action to be processed when entering a given state
- * @param  {FSM_Def} fsmDef Maps an action name to an action factory
+ * @param  {Array<Transition>} transitions Array of transitions for a given state machine
  * @param {function (Machine_Output, Machine_Output) : Machine_Output} mergeOutputFn monoidal merge (pure) function
  * to be provided to instruct how to combine machine outputs. Beware that the second output corresponds to the entry
  * action output which must logically correspond to a processing as if it were posterior to the first output. In
  * many cases, that will mean that the second machine output has to be 'last', whatever that means for the monoid
  * and application in question
  */
-export function decorateWithEntryActions(fsmDef, entryActions, mergeOutputFn) {
+export function decorateWithEntryActions(transitions, entryActions, mergeOutputFn) {
   // will modify transitions.actions keeping the display name intact
-  const { transitions: origTransitions, states } = fsmDef;
   const lenses = objectTreeLenses;
   const { getChildren, constructTree, getLabel } = objectTreeLenses;
   const traverse = {
@@ -565,7 +564,7 @@ export function decorateWithEntryActions(fsmDef, entryActions, mergeOutputFn) {
  *
  * @param {ActionFactory} action action factory which may be associated to a display name
  * @param {ActionFactory} entryAction
- * @param {function (Machine_Output, Machine_Output) : Machine_Output} mergeOutputFn monoidal merge function. Cf.
+ * @param {function (Array<Machine_Output>) : Machine_Output} mergeOutputFn monoidal merge function. Cf.
  *   decorateWithEntryActions
  * @return ActionFactory
  */
@@ -593,7 +592,7 @@ function decorateWithExitAction(action, entryAction, mergeOutputFn) {
     // ROADMAP : the best is, according to semantics, to actually send both separately
     return {
       model_update: [].concat(actionUpdate || [], exitActionResult.model_update || []),
-      output: Object.assign({}, actionResult.output || {}, exitActionResult.output || {})
+      output: mergeOutputFn([actionResult.output, exitActionResult.output])
     }
   };
   decoratedAction.displayName = action.displayName;

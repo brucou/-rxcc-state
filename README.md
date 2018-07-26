@@ -20,8 +20,8 @@ often has a logic [organized around a limited set of control states](#base-examp
 However, it is a very general tool, that have found miscellaneous applications in different 
 contexts :
 
-- well, ES6 generators are transpiled to ES5 state transducers when there is no native support
- in browser (at least that was facebook's [`regenerator`](https://github.com/facebook/regenerator)  is doing)
+- ES6 generators are transpiled to ES5 state transducers when there is no native support
+ in browser (cf. facebook's [`regenerator`](https://github.com/facebook/regenerator))
 - user interface specification and implementation for embedded systems
 - [model-based testing, and test input generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf)
 - AI's decision making in games

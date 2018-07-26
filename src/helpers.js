@@ -174,7 +174,13 @@ function defaultMerge(arrayOutputs) {
   return arrayOutputs.length === 0 ? NO_OUTPUT : Object.assign({}, ...arrayOutputs)
 }
 
-export function mergeActionFactories(mergeFn, arrayActionFactory) {
+/**
+ *
+ * @param {function (Array<Machine_Output>) : Machine_Output} mergeOutputFn
+ * @param {Array<ActionFactory>} arrayActionFactory
+ * @returns {function(*=, *=, *=): {model_update: *[], output: *|null}}
+ */
+export function mergeActionFactories(mergeOutputFn, arrayActionFactory) {
   return function (model, eventData, settings) {
     const arrayActions = arrayActionFactory.map(factory => factory(model, eventData, settings));
     const arrayModelUpdates = arrayActions.map(x => x.model_update || []);
@@ -183,7 +189,7 @@ export function mergeActionFactories(mergeFn, arrayActionFactory) {
     return {
       model_update: [].concat(...arrayModelUpdates),
       // for instance, mergeFn = R.mergeAll or some variations around R.mergeDeepLeft
-      output: (mergeFn || defaultMerge)(arrayOutputs)
+      output: (mergeOutputFn || defaultMerge)(arrayOutputs)
     }
   }
 }
