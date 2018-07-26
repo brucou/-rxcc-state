@@ -486,7 +486,6 @@ export function makeStreamingStateMachine(settings, fsmDef) {
 }
 
 /**
- * // TODO test
  * Adds a `displayName` property corresponding to the action name to all given action factories. The idea is to use
  * the action name in some specific useful contexts (debugging, tracing, visualizing)
  * @param {Object.<string, function>} namedActionSpecs Maps an action name to an action factory
@@ -566,7 +565,8 @@ export function decorateWithEntryActions(fsmDef, entryActions, mergeOutputFn) {
  *
  * @param {ActionFactory} action action factory which may be associated to a display name
  * @param {ActionFactory} entryAction
- * @param {function (Machine_Output, Machine_Output) : Machine_Output} mergeOutputFn monoidal merge function. Cf. decorateWithEntryActions
+ * @param {function (Machine_Output, Machine_Output) : Machine_Output} mergeOutputFn monoidal merge function. Cf.
+ *   decorateWithEntryActions
  * @return ActionFactory
  */
 function decorateWithExitAction(action, entryAction, mergeOutputFn) {
