@@ -1,5 +1,5 @@
 import * as QUnit from "qunitjs"
-import { INIT_EVENT, INITIAL_STATE_NAME, toDagreVisualizerFormat } from "../src"
+import { INIT_EVENT, INIT_STATE, toDagreVisualizerFormat } from "../src"
 
 QUnit.module("Testing conversion from fsm specs to online visualizer format", {});
 
@@ -71,7 +71,7 @@ QUnit.test("History states, entry states, standard states, and all transitions :
     }
   };
   const transitions = [
-    { from: INITIAL_STATE_NAME, to: "no_cd_loaded", event: INIT_EVENT, action: fsm_initialize_model },
+    { from: INIT_STATE, to: "no_cd_loaded", event: INIT_EVENT, action: fsm_initialize_model },
     { from: "no_cd_loaded", to: "cd_drawer_closed", event: INIT_EVENT, action: identity },
     { from: "cd_drawer_closed", to: "cd_drawer_open", event: "EJECT", action: open_drawer },
     { from: "cd_drawer_open", to: "closing_cd_drawer", event: "EJECT", action: close_drawer },

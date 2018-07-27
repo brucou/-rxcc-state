@@ -1,5 +1,5 @@
 import * as QUnit from "qunitjs"
-import { INIT_EVENT, INITIAL_STATE_NAME, toPlantUml } from "../src"
+import { INIT_EVENT, INIT_STATE, toPlantUml } from "../src"
 
 function always_true() {return true}
 
@@ -43,7 +43,7 @@ QUnit.test("transition labelling with guards and actions, but no events", functi
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME, event: INIT_EVENT, guards: [
+        from: INIT_STATE, event: INIT_EVENT, guards: [
           { predicate: always_true, to: 'A', action: dummy_action },
           { predicate: always_false, to: 'A', action: another_dummy_action }
         ]
@@ -66,7 +66,7 @@ QUnit.test("2 states", function exec_test(assert) {
     states: { A: '', B: '' },
     events: [EVENT1],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: dummy_action },
+      { from: INIT_STATE, to: 'A', event: INIT_EVENT, action: dummy_action },
       { from: 'A', to: 'B', event: EVENT1, action: another_dummy_action },
     ],
     initial_extended_state: model_initial
@@ -156,7 +156,7 @@ QUnit.test("History states, entry states, standard states, and all transitions :
     }
   };
   const transitions = [
-    { from: INITIAL_STATE_NAME, to: "no_cd_loaded", event: INIT_EVENT, action: fsm_initialize_model },
+    { from: INIT_STATE, to: "no_cd_loaded", event: INIT_EVENT, action: fsm_initialize_model },
     { from: "no_cd_loaded", to: "cd_drawer_closed", event: INIT_EVENT, action: identity },
     { from: "cd_drawer_closed", to: "cd_drawer_open", event: "EJECT", action: open_drawer },
     { from: "cd_drawer_open", to: "closing_cd_drawer", event: "EJECT", action: close_drawer },

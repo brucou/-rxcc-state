@@ -19,7 +19,7 @@
 // TODO : as a isActualOutput function to discriminate out the Maybe
 
 import {
-  AUTO_EVENT, default_action_result, INIT_EVENT, INITIAL_STATE_NAME, NO_OUTPUT, STATE_PROTOTYPE_NAME
+  AUTO_EVENT, default_action_result, INIT_EVENT, INIT_STATE, NO_OUTPUT, STATE_PROTOTYPE_NAME
 } from "./properties"
 import { applyUpdateOperations, get_fn_name, keys, wrap } from './helpers'
 import { objectTreeLenses, preorderTraverseTree } from "fp-rosetree"
@@ -135,10 +135,10 @@ function build_nested_state_structure(states, event_emitter_factory) {
     emitLastSeenStateEvent: function (x) {
       last_seen_state_event_emitter.onNext(x);
     },
-    current_state_name: INITIAL_STATE_NAME
+    current_state_name: INIT_STATE
   };
 
-  hash_states[INITIAL_STATE_NAME] = new State();
+  hash_states[INIT_STATE] = new State();
   hash_states[STATE_PROTOTYPE_NAME] = new State();
 
   build_state_reducer(states, State);
@@ -161,7 +161,7 @@ function build_state_enum(states) {
   let states_enum = { history: {} };
 
   // Set initial state
-  states_enum.NOK = INITIAL_STATE_NAME;
+  states_enum.NOK = INIT_STATE;
 
   function build_state_reducer(states) {
     keys(states).forEach(function (state_name) {
@@ -340,7 +340,7 @@ export function create_state_machine(fsmDef, settings) {
 
   function process_event(hash_states, event, event_data, model) {
     console.log("Processing event ", event, event_data);
-    const current_state = hash_states[INITIAL_STATE_NAME].current_state_name;
+    const current_state = hash_states[INIT_STATE].current_state_name;
     const event_handler = hash_states[current_state][event];
 
     if (event_handler) {
@@ -351,7 +351,7 @@ export function create_state_machine(fsmDef, settings) {
       const output = event_handler(model, event_data, current_state).output;
 
       // we read it anew as the execution of the event handler may have changed it
-      const current_state = hash_states[INITIAL_STATE_NAME].current_state_name;
+      const current_state = hash_states[INIT_STATE].current_state_name;
 
       // Two cases here:
       // 1. Init handlers, when present on the current state, must be acted on immediately
@@ -424,7 +424,7 @@ export function create_state_machine(fsmDef, settings) {
       throw 'enter_state : unknown case! Not a state name, and not a history state to enter!'
     }
     state_to.active = true;
-    hash_states[INITIAL_STATE_NAME].current_state_name = state_to_name;
+    hash_states[INIT_STATE].current_state_name = state_to_name;
 
     console.info("AND TRANSITION TO STATE", state_to_name);
     return state_to_name;
@@ -503,13 +503,14 @@ export function makeNamedActionsFactory(namedActionSpecs) {
 /**
  * @param  {Object.<string, function>} entryActions Adds an action to be processed when entering a given state
  * @param  {Array<Transition>} transitions Array of transitions for a given state machine
- * @param {function (Machine_Output, Machine_Output) : Machine_Output} mergeOutputFn monoidal merge (pure) function
+ * @param  {{}} states hierarchy of states for a given state machine
+ * @param {function (Array<Machine_Output>) : Machine_Output} mergeOutputFn monoidal merge (pure) function
  * to be provided to instruct how to combine machine outputs. Beware that the second output corresponds to the entry
  * action output which must logically correspond to a processing as if it were posterior to the first output. In
  * many cases, that will mean that the second machine output has to be 'last', whatever that means for the monoid
  * and application in question
  */
-export function decorateWithEntryActions(transitions, entryActions, mergeOutputFn) {
+export function decorateWithEntryActions(transitions, states, entryActions, mergeOutputFn) {
   // will modify transitions.actions keeping the display name intact
   const lenses = objectTreeLenses;
   const { getChildren, constructTree, getLabel } = objectTreeLenses;
@@ -532,7 +533,7 @@ export function decorateWithEntryActions(transitions, entryActions, mergeOutputF
     throw `decorateWithEntryActions : found control states for which entry actions are defined, and yet do not exist in the state machine!`
   }
   else {
-    const decoratedTransitions = origTransitions.map(transitionRecord => {
+    const decoratedTransitions = transitions.map(transitionRecord => {
       const { from, event, guards } = transitionRecord;
 
       return {
@@ -555,7 +556,7 @@ export function decorateWithEntryActions(transitions, entryActions, mergeOutputF
 
     });
 
-    return Object.assign({}, fsmDef, { transitions: decoratedTransitions })
+    return decoratedTransitions
   }
 
 }

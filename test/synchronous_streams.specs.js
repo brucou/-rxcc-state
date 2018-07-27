@@ -2,7 +2,7 @@ import * as QUnit from "qunitjs"
 import * as Rx from "rx"
 import { clone, F, merge, T } from "ramda"
 import {
-  create_state_machine, INIT_EVENT, INITIAL_STATE_NAME, NO_OUTPUT
+  create_state_machine, INIT_EVENT, INIT_STATE, NO_OUTPUT
 } from "../src"
 import { applyPatch } from "json-patch-es6"
 
@@ -105,7 +105,7 @@ QUnit.test("INIT event, no action, no guard", function exec_test(assert) {
     control_states: { A: '' },
     events: [],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: NO_ACTION }
+      { from: INIT_STATE, to: 'A', event: INIT_EVENT, action: NO_ACTION }
     ],
     model_initial: model_initial
   };
@@ -121,7 +121,7 @@ QUnit.test("INIT event, no action, false guard", function exec_test(assert) {
     control_states: { A: '' },
     events: [],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: F, action: NO_ACTION }
+      { from: INIT_STATE, to: 'A', event: INIT_EVENT, condition: F, action: NO_ACTION }
     ],
     model_initial: model_initial
   };
@@ -137,7 +137,7 @@ QUnit.test("INIT event, no action, true guard", function exec_test(assert) {
     control_states: { A: '' },
     events: [],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: T, action: NO_ACTION }
+      { from: INIT_STATE, to: 'A', event: INIT_EVENT, condition: T, action: NO_ACTION }
     ],
     model_initial: model_initial
   };
@@ -157,7 +157,7 @@ QUnit.test("INIT event, action, false guard", function exec_test(assert) {
     control_states: { A: '' },
     events: [],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, condition: F, action: fail_if_called }
+      { from: INIT_STATE, to: 'A', event: INIT_EVENT, condition: F, action: fail_if_called }
     ],
     model_initial: model_initial
   };
@@ -180,7 +180,7 @@ QUnit.test("INIT event, action, true guard", function exec_test(assert) {
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME,
+        from: INIT_STATE,
         to: 'A',
         event: INIT_EVENT,
         condition: T,
@@ -213,7 +213,7 @@ QUnit.test("INIT event, 2 actions, [T,T] conditions, 1st action executed", funct
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME, event: INIT_EVENT, conditions: [
+        from: INIT_STATE, event: INIT_EVENT, conditions: [
         { condition: T, to: 'A', action: spied_on_dummy_action },
         { condition: T, to: 'A', action: fail_if_called }
       ]
@@ -244,7 +244,7 @@ QUnit.test("INIT event, 2 actions, [F,T] conditions, 2nd action executed", funct
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME, event: INIT_EVENT, conditions: [
+        from: INIT_STATE, event: INIT_EVENT, conditions: [
         { condition: F, to: 'A', action: fail_if_called },
         { condition: T, to: 'A', action: spied_on_dummy_action }
       ]
@@ -275,7 +275,7 @@ QUnit.test("INIT event, 2 actions, [T,F] conditions, 1st action executed", funct
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME, event: INIT_EVENT, conditions: [
+        from: INIT_STATE, event: INIT_EVENT, conditions: [
         { condition: F, to: 'A', action: spied_on_dummy_action },
         { condition: T, to: 'A', action: fail_if_called }
       ]
@@ -306,7 +306,7 @@ QUnit.test("INIT event, 2 actions, [F,F] conditions, no action executed", functi
     events: [],
     transitions: [
       {
-        from: INITIAL_STATE_NAME, event: INIT_EVENT, conditions: [
+        from: INIT_STATE, event: INIT_EVENT, conditions: [
         { condition: F, to: 'A', action: fail_if_called },
         { condition: F, to: 'A', action: fail_if_called }
       ]
@@ -328,7 +328,7 @@ QUnit.test("INIT event, 2 actions with no model update, NOK -> A -> B, no guards
     control_states: { A: '', B: '' },
     events: [EVENT1],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: dummy_action },
+      { from: INIT_STATE, to: 'A', event: INIT_EVENT, action: dummy_action },
       { from: 'A', to: 'B', event: EVENT1, action: another_dummy_action },
     ],
     model_initial: model_initial
@@ -348,7 +348,7 @@ QUnit.test("INIT event, 2 actions with model update, NOK -> A -> B, no guards", 
     control_states: { A: '', B: '' },
     events: [EVENT1],
     transitions: [
-      { from: INITIAL_STATE_NAME, to: 'A', event: INIT_EVENT, action: dummy_action_with_update },
+      { from: INIT_STATE, to: 'A', event: INIT_EVENT, action: dummy_action_with_update },
       { from: 'A', to: 'B', event: EVENT1, action: another_dummy_action_with_update },
     ],
     model_initial: model_initial
@@ -381,6 +381,6 @@ QUnit.test("INIT event, 2 actions with model update, NOK -> A -> B, no guards", 
 // TODO : document initial state is NOK, and event init automatically fired on starting the fsm
 // TODO : allow to start with a fsm in anotehr initial state than NOK
 //   for that     state_to.active = true;
-//                hash_states[INITIAL_STATE_NAME].current_state_name = state_to_name;
+//                hash_states[INIT_STATE].current_state_name = state_to_name;
 // set the model to some initial value, and the initial state in hash_states, and the active = true
 // to MUST be a name of the state_to = hash_states[to]; NOT a history state (to is fn then)

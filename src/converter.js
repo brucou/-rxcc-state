@@ -1,5 +1,5 @@
 import {
-  HISTORY_STATE_NAME, INITIAL_STATE_NAME, SEP, TRANSITION_LABEL_START_SYMBOL, TRANSITION_SYMBOL
+  HISTORY_STATE_NAME, INIT_STATE, SEP, TRANSITION_LABEL_START_SYMBOL, TRANSITION_SYMBOL
 } from "./properties"
 import {
   getDisplayName, format_history_transition_state_name, format_transition_label, get_all_transitions, is_entry_transition,
@@ -40,7 +40,7 @@ export function toPlantUml(fsmDef, settings) {
     }
   };
 
-  const translationMap = postOrderTraverseTree(objectTreeLenses, traverse, { [INITIAL_STATE_NAME]: states });
+  const translationMap = postOrderTraverseTree(objectTreeLenses, traverse, { [INIT_STATE]: states });
 
   const mappedTree = translationMap.get('0');
   translationMap.clear();
@@ -104,7 +104,7 @@ function translate_transitions(controlState, transitions) {
 
 function format_standard_transitions(controlState, transitions) {
   // The only transition from initial state are INIT transitions and that's already taken care of elsewhere
-  if (controlState === INITIAL_STATE_NAME) return ''
+  if (controlState === INIT_STATE) return ''
   else return transitions.map(transition => {
     const allTransitions = get_all_transitions(transition)
 
@@ -192,7 +192,7 @@ export function toDagreVisualizerFormat(fsmDef) {
     }
   };
 
-  const _translatedStates = postOrderTraverseTree(objectTreeLenses, traverse, { [INITIAL_STATE_NAME]: states });
+  const _translatedStates = postOrderTraverseTree(objectTreeLenses, traverse, { [INIT_STATE]: states });
   const translatedStates = _translatedStates.get('0');
 
   const translatedTransitions = transitions.map(transition => {
