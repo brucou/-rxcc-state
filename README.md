@@ -17,8 +17,8 @@ interfaces. As a matter of fact, to [every user interface can be associated a co
 relating a user input to an action to be performed on the interfaced systems. That computation 
 often has a logic [organized around a limited set of control states](#base-example).
 
-However, it is a very general tool, that have found miscellaneous applications in different 
-contexts :
+However, state machines are a very general tool, that have found miscellaneous applications in 
+unrelated contexts :
 
 - ES6 generators are transpiled to ES5 state transducers when there is no native support
  in browser (cf. facebook's [`regenerator`](https://github.com/facebook/regenerator))
