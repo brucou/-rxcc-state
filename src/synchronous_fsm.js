@@ -476,10 +476,11 @@ export function makeStreamingStateMachine(settings, fsmDef) {
       of({ [INIT_EVENT]: fsmDef.initial_extended_state }),
       keys(events).map(eventLabel => {
         const eventSource$ = events[eventLabel];
-        return eventSource$.map(eventData => fsm.yield({ [eventLabel]: eventData }))
+        return eventSource$.map(eventData => ({ [eventLabel]: eventData }))
       })
     )
-      .filter(output => output != NO_OUTPUT)
+      .map(fsm.yield)
+      .filter(output => output !== NO_OUTPUT)
   }
 
   return computeActions
@@ -517,7 +518,7 @@ export function decorateWithEntryActions(transitions, states, entryActions, merg
   const lenses = objectTreeLenses;
   const { getChildren, constructTree, getLabel } = objectTreeLenses;
   const traverse = {
-    strategy : PRE_ORDER,
+    strategy: PRE_ORDER,
     seed: {},
     visit: (accStateList, traversalState, tree) => {
       const treeLabel = getLabel(tree);
