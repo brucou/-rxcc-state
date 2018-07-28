@@ -22,7 +22,7 @@ import {
   AUTO_EVENT, default_action_result, INIT_EVENT, INIT_STATE, NO_OUTPUT, STATE_PROTOTYPE_NAME
 } from "./properties"
 import { applyUpdateOperations, get_fn_name, keys, wrap } from './helpers'
-import { objectTreeLenses, preorderTraverseTree } from "fp-rosetree"
+import { objectTreeLenses, PRE_ORDER, traverseObj } from "fp-rosetree"
 
 /**
  * Takes a list of identifiers (strings), adds init to it, and returns a hash whose properties are
@@ -517,6 +517,7 @@ export function decorateWithEntryActions(transitions, states, entryActions, merg
   const lenses = objectTreeLenses;
   const { getChildren, constructTree, getLabel } = objectTreeLenses;
   const traverse = {
+    strategy : PRE_ORDER,
     seed: {},
     visit: (accStateList, traversalState, tree) => {
       const treeLabel = getLabel(tree);
@@ -526,7 +527,7 @@ export function decorateWithEntryActions(transitions, states, entryActions, merg
       return accStateList;
     }
   };
-  const stateHashMap = preorderTraverseTree(lenses, traverse, states);
+  const stateHashMap = traverseObj(traverse, states);
   const isValidEntryActions = Object.keys(entryActions).every(controlState => {
     return stateHashMap[controlState] != null
   });
