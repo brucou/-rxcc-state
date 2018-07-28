@@ -385,7 +385,8 @@ We have included two helpers for visualization of the state transducer :
 FSM_Def -> JSON`
 
 Automated visualization works well with simple graphs, but seems to encounter trouble to generate
- optimally satisfying complex graphs. The Dagre layout seems to be a relatively good option. 
+ optimally satisfying complex graphs. The Dagre layout seems to be a relatively good option. The 
+ [`yed`](https://www.yworks.com/products/yed) orthogonal layout also seems to give pretty good results. 
 
 # References
 [comonadic user interfaces](https://functorial.com/the-future-is-comonadic/main.pdf)
