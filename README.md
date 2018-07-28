@@ -62,8 +62,8 @@ actual or practical usage of automata.
 
 An extended state machine is a state machine endowed with a set of variables, predicates (guards)
 and instructions governing the update of the mentioned set of variables. To any extended state 
-machines it corresponds a standard state machine. An extended state machine allows however to 
-describe succintly a class of standard state machines, parameterized by its set of variables.
+machines it corresponds a standard state machine ()albeit often one with a far greater number of 
+states) with the same semantics.
 
 A hierarchical state machine is a state machine whose states can be themselves state machines. 
 Thus instead of having a set of states as in standard state machines, we have a hierarchy (tree) of 
@@ -79,32 +79,29 @@ input (transducer part), and whose input/output relation follows a logic guided 
 predefined control states (state machine part), and an encapsulated memory which can be 
 modified through actions guarded by predicates (extended part).
 
-Note that if we add concurrency and messaging (broadcast) to extended hierarchical state machines,
- we get a statechart. We made the decision to discard any concurrency mechanism and broadcast  
- mechanism for two reasons :
- 
- - if there are no parallel regions, a statechart is basically a hierarchical state transducer. 
- That already addresses a large class of computations!
- - the statechart concurrency model cannot be extended (violating the open-closed principle). We 
- want to give the library user the possibility to choose its own concurrency and messaging 
- semantics (sync/async, deterministic/non-deterministic, queued/unqueued,  
- peer-to-peer/publish-subscribe, preemption/cooperation, etc.)
-- concurrent state machines with significant cross-machine messaging are better developed with a
- (text-based) concurrency-oriented paradigm (CSP, etc.). The statechart graphical representation of 
- such machines can be hard to reason about. In short when the reactive system under study is 
- concurrency-driven, a concurrency-specialized paradigm provides more benefits. When that 
- reactive system is primarily control-driven, a statechart/state machine can be a better tool.
-- statecharts have historically stumbled on the concurrency semantics, with more than 20 
-different semantics being proposed. Understanding precisely a given statechart (Rhapsody, 
-Statemate, VisualMate, StateFlow, UML, etc.) hence may require a complete understanding of the 
-chosen semantics (micro-steps, broadcast rules, etc.).
-- statecharts propose activities and actions, leading to complecting action management with 
-control flow
-- a hierarchical automata already ocvers a large set of encountered use cases, has few 
-simple rules, the desired concurrency can be added in any suitable form, and does 
-not realize any effects : it is easy to combine and reuse and extend and reason about. 
+Note that if we add concurrency and messaging to extended hierarchical state transducers, we get
+ a statechart. We made the design decision to remain at the present level, and not to incorporate 
+ any concurrency mechanism.[^2]
 
-NOTE: Too long put that in a separate section
+[^2]: Our rationale is as follows :  
+ - if there are no parallel regions, a statechart is basically a hierarchical state transducer. 
+ That is often enough!
+ - statecharts include activities and actions which may produce effects. We are seeking 
+ an purely computational approach (i.e effect-less) to facilitate composition, reuse and testing.
+  Any concurrent model can be added on top as necessary.
+ - we estimate the concurrency semantics of statecharts to be unduely complicated vs. alternative
+  concurrency models[^3]. That makes it difficult for programmers to elaborate a mental model of 
+  the statecharts (in the presence of concurrency) and that makes it difficult for other users to
+   reason based solely on the visualization of concurrent statecharts. Those issues are 
+   unavoidable passed a given scale or complexity of the modelized system
+ - some [statecharts practitioners](http://sismic.readthedocs.io/en/master/communication.html#) 
+ favor having separate state charts communicating in an ad-hoc way rather than an integrated 
+ statechart model where concurrent state charts are gathered in nested states of a single 
+ statechart. We agree.
+ 
+[^3]: As a matter of fact, more than 20 different semantics have been proposed to define 
+precisely the concurrency model for statecharts, e.g Rhapsody, Statemate, VisualMate, StateFlow, 
+UML, etc. all have different concurrency models.
  
 # Install
 **TODO**

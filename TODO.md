@@ -1,4 +1,5 @@
 # Now
+- include learning from `http://sismic.readthedocs.io/en/master/communication.html` in README
 - test with new object lenses that it still works
 - write the reactive part of the API (makeStream library)
 - document

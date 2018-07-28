@@ -511,6 +511,8 @@ export function makeNamedActionsFactory(namedActionSpecs) {
  * and application in question
  */
 export function decorateWithEntryActions(transitions, states, entryActions, mergeOutputFn) {
+  // TODO : add a root to the object!! actually should write a traverse obj to avoid this kind of problem, obj is
+  // special as it has no root...
   // will modify transitions.actions keeping the display name intact
   const lenses = objectTreeLenses;
   const { getChildren, constructTree, getLabel } = objectTreeLenses;
