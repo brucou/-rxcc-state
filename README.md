@@ -158,8 +158,8 @@ We provide a way to construct such a function with the `makeStreamingStateMachin
 create a stream transducer, which translates an input stream into an output stream.
 
 ## General concepts
-Our state transducer is an object which encapsulates state, exposes a function by which input is 
-received. That function, based on the transducer's encapsulated state and configuration, and the 
+Our state transducer is an object which encapsulates state, and exposes a function by which input
+ is received. That function, based on the transducer's encapsulated state and configuration, and the 
 received input produces two things : 
 
 - a list of updates to apply internally to the extended state
@@ -196,11 +196,13 @@ This in turn was turned into a non-trivial state machine (6 states, ~20 transiti
 the screens to display in function of the user inputs. The machine **does not display the screen 
 itself** (it performs no effects), **it computes which screen to display** according to the 
 sequence of inputs performed by the user and its encapsulated state (user-entered data, data 
-validation, etc.) :
+validation, etc.). The action `display screen` must be understood as a regular piece of data whose 
+meaning is to be interpreted down the road by the portion of the program in charge of realizing 
+effcts. The state machine can be visualized as follows :
  
 ![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
 
-For illustration purposes, the encapsulated state has the following shape :
+In our example, the encapsulated state has the following shape :
 
 ```javascript
 {
