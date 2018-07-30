@@ -20,9 +20,9 @@
 
 import {
   AUTO_EVENT, default_action_result, INIT_EVENT, INIT_STATE, NO_OUTPUT, STATE_PROTOTYPE_NAME
-} from "./properties"
-import { applyUpdateOperations, get_fn_name, keys, wrap } from './helpers'
-import { objectTreeLenses, PRE_ORDER, traverseObj } from "fp-rosetree"
+} from "./properties";
+import { applyUpdateOperations, get_fn_name, keys, wrap } from "./helpers";
+import { objectTreeLenses, PRE_ORDER, traverseObj } from "fp-rosetree";
 
 /**
  * Takes a list of identifiers (strings), adds init to it, and returns a hash whose properties are
@@ -34,13 +34,15 @@ import { objectTreeLenses, PRE_ORDER, traverseObj } from "fp-rosetree"
  * @returns {Object<String,String>}
  */
 function build_event_enum(array_identifiers) {
-  array_identifiers = array_identifiers.reduce ? array_identifiers : Array.prototype.slice.call(arguments);
+  array_identifiers = array_identifiers.reduce
+    ? array_identifiers
+    : Array.prototype.slice.call(arguments);
   // NOTE : That will overwrite any other event called init...
   array_identifiers.push(INIT_EVENT);
   return array_identifiers.reduce(function (acc, identifier) {
     acc[identifier] = identifier;
     return acc;
-  }, {})
+  }, {});
 }
 
 /**
@@ -63,7 +65,7 @@ function build_event_enum(array_identifiers) {
  * @returns {{hash_states: {}, is_group_state: {}}}
  */
 function build_nested_state_structure(states, event_emitter_factory) {
-  const root_name = 'State';
+  const root_name = "State";
   const last_seen_state_event_emitter = event_emitter_factory();
   let hash_states = {};
   let last_seen_state_listener_disposables = [];
@@ -77,13 +79,23 @@ function build_nested_state_structure(states, event_emitter_factory) {
   function add_last_seen_state_listener(child_name, parent_name) {
     last_seen_state_listener_disposables.push(
       last_seen_state_event_emitter.subscribe(function (x) {
-        const event_emitter_name = x.event_emitter_name
+        const event_emitter_name = x.event_emitter_name;
         const last_seen_state_name = x.last_seen_state_name;
         if (event_emitter_name === child_name) {
-          console.log(['last seen state set to', wrap(last_seen_state_name), 'in', wrap(parent_name)].join(" "));
-          hash_states[parent_name].history.last_seen_state = last_seen_state_name;
+          console.log(
+            [
+              "last seen state set to",
+              wrap(last_seen_state_name),
+              "in",
+              wrap(parent_name)
+            ].join(" ")
+          );
+          hash_states[
+            parent_name
+            ].history.last_seen_state = last_seen_state_name;
         }
-      }));
+      })
+    );
   }
 
   function build_state_reducer(states, curr_constructor) {
@@ -97,7 +109,9 @@ function build_nested_state_structure(states, event_emitter_factory) {
       // visible in B and C
       hash_states[state_name] = new curr_constructor();
       hash_states[state_name].name = state_name;
-      const parent_name = hash_states[state_name].parent_name = get_fn_name(curr_constructor);
+      const parent_name = (hash_states[state_name].parent_name = get_fn_name(
+        curr_constructor
+      ));
       hash_states[state_name].root_name = root_name;
       hash_states[state_name].history = { last_seen_state: null };
       hash_states[state_name].active = false;
@@ -115,14 +129,14 @@ function build_nested_state_structure(states, event_emitter_factory) {
       // hierarchy when state C is abandoned.
       add_last_seen_state_listener(state_name, parent_name);
 
-      if (typeof(state_config) === 'object') {
+      if (typeof state_config === "object") {
         is_group_state[state_name] = true;
-        eval(['curr_constructor_new = function', state_name, '(){}'].join(" "));
+        eval(["curr_constructor_new = function", state_name, "(){}"].join(" "));
         curr_constructor_new.displayName = state_name;
         curr_constructor_new.prototype = hash_states[state_name];
         build_state_reducer(state_config, curr_constructor_new);
       }
-    })
+    });
   }
 
   function State() {
@@ -133,7 +147,7 @@ function build_nested_state_structure(states, event_emitter_factory) {
   // objects, so it can be called from all of them when a transition triggers a change of state
   State.prototype = {
     emitLastSeenStateEvent: function (x) {
-      last_seen_state_event_emitter.onNext(x);
+      last_seen_state_event_emitter.emit(x);
     },
     current_state_name: INIT_STATE
   };
@@ -173,13 +187,15 @@ function build_state_enum(states) {
       let state_name_history_fn;
       // NOTE : we add an underscore to avoid collision with javascript reserved word (new,
       // each, ...)
-      eval(['state_name_history_fn = function', '_' + state_name, '(){}'].join(" "));
+      eval(
+        ["state_name_history_fn = function", "_" + state_name, "(){}"].join(" ")
+      );
       states_enum.history[state_name] = state_name_history_fn;
 
-      if (typeof(state_config) === 'object') {
+      if (typeof state_config === "object") {
         build_state_reducer(state_config);
       }
-    })
+    });
   }
 
   build_state_reducer(states);
@@ -205,37 +221,44 @@ function build_state_enum(states) {
  * @returns {{yield : Function, start: Function}}
  */
 export function create_state_machine(fsmDef, settings) {
-  const { states: control_states, events, transitions, initial_extended_state } = fsmDef;
+  const {
+    states: control_states,
+    events,
+    transitions,
+    initial_extended_state
+  } = fsmDef;
   const subject_factory = settings && settings.subject_factory;
-  if (!subject_factory) throw `create_state_machine : cannot find a subject factory (use Rxjs subject??)`
+  if (!subject_factory)
+    throw `create_state_machine : cannot find a subject factory (use Rxjs subject??)`;
 
   const _control_states = build_state_enum(control_states);
   const _events = build_event_enum(events);
 
   // Create the nested hierarchical
-  const hash_states_struct = build_nested_state_structure(_control_states, subject_factory);
+  const hash_states_struct = build_nested_state_structure(
+    _control_states,
+    subject_factory
+  );
 
   // This will be the model object which will be updated by all actions and on which conditions
   // will be evaluated It is safely contained in a closure so it cannot be accessed in any way
   // outside the state machine. Note also that the model is only modified through JSON patch operations which create
   // a new model every time. There is hence no need to do any cloning.
   let model = initial_extended_state;
-  let is_init_state = {}; // {Object<state_name,boolean>}, allows to know whether a state has a
-  // init transition defined
-  let is_auto_state = {}; // {Object<state_name,boolean>}, allows to know whether a state has an
-  // automatic transition defined
-  const is_group_state = hash_states_struct.is_group_state; // {Object<state_name,boolean>}, allows
-                                                            // to know whether a state is a group
-                                                            // of state or not
+  // {Object<state_name,boolean>}, allows to know whether a state has a init transition defined
+  let is_init_state = {};
+  // {Object<state_name,boolean>}, allows to know whether a state has an automatic transition defined
+  let is_auto_state = {};
+  // {Object<state_name,boolean>}, allows to know whether a state is a group of state or not
+  const is_group_state = hash_states_struct.is_group_state;
   let hash_states = hash_states_struct.hash_states;
 
   transitions.forEach(function (transition) {
     console.log("processing transition:", transition);
     let { from, to, action, event, guards: arr_predicate } = transition;
     // CASE : ZERO OR ONE condition set
-    if (!arr_predicate) arr_predicate = [
-      { predicate: arr_predicate, to: to, action: action }
-    ];
+    if (!arr_predicate)
+      arr_predicate = [{ predicate: arr_predicate, to: to, action: action }];
 
     // CASE : transition has a init event
     // NOTE : there should ever only be one, but we don't enforce it for now
@@ -247,7 +270,8 @@ export function create_state_machine(fsmDef, settings) {
 
     // ERROR CASE : state found in transition but cannot be found in the events passed as parameter
     // NOTE : this is probably all what we need the events variable for
-    if (event && !(event in _events)) throw `unknown event ${event} found in state machine definition!`
+    if (event && !(event in _events))
+      throw `unknown event ${event} found in state machine definition!`;
     // CASE : automatic transitions : no events - likely a transient state with only conditions
     if (!event) {
       event = AUTO_EVENT;
@@ -261,73 +285,100 @@ export function create_state_machine(fsmDef, settings) {
     console.log("This is transition for event:", event);
     console.log("Predicates:", arr_predicate);
 
-    from_proto[event] = arr_predicate.reduce(function (acc, guard, index) {
-      let action = guard.action;
-      console.log("Guard:", guard);
-      const condition_checking_fn = (function (guard, settings) {
-        let condition_suffix = '';
-        // We add the `current_state` because the current state might be different from the `from`
-        // field here This is the case for instance when we are in a substate, but through
-        // prototypal inheritance it is the handler of the prototype which is called
-        const condition_checking_fn = function (model_, event_data, current_state) {
-          from = current_state || from;
-          const { predicate, to } = guard;
-          condition_suffix = predicate ? '_checking_condition_' + index : '';
-          let actionResult = default_action_result;
+    from_proto[event] = arr_predicate.reduce(
+      function (acc, guard, index) {
+        let action = guard.action;
+        console.log("Guard:", guard);
+        const condition_checking_fn = (function (guard, settings) {
+          let condition_suffix = "";
+          // We add the `current_state` because the current state might be different from the `from`
+          // field here This is the case for instance when we are in a substate, but through
+          // prototypal inheritance it is the handler of the prototype which is called
+          const condition_checking_fn = function (
+            model_,
+            event_data,
+            current_state
+          ) {
+            from = current_state || from;
+            const { predicate, to } = guard;
+            condition_suffix = predicate ? "_checking_condition_" + index : "";
+            let actionResult = default_action_result;
 
-          if (!predicate || predicate(model_, event_data, settings)) {
-            // CASE : guard for transition is fulfilled so we can execute the actions...
-            console.info("IN STATE ", from);
-            console.info("WITH model, event data, settings BEING ", model_, event_data, settings);
-            console.info("CASE : "
-              + (predicate ? "guard " + predicate.name + " for transition is fulfilled"
-                : "automatic transition"));
-            if (action) {
-              // CASE : we do have some actions to execute
-              console.info("THEN : we execute the action " + action.name);
-              // NOTE : in a further extension, passing the fsm and the events object could help
-              // in implementing asynchronous fsm
-              actionResult = action(model_, event_data, settings);
+            if (!predicate || predicate(model_, event_data, settings)) {
+              // CASE : guard for transition is fulfilled so we can execute the actions...
+              console.info("IN STATE ", from);
+              console.info(
+                "WITH model, event data, settings BEING ",
+                model_,
+                event_data,
+                settings
+              );
+              console.info(
+                "CASE : " +
+                (predicate
+                  ? "guard " + predicate.name + " for transition is fulfilled"
+                  : "automatic transition")
+              );
+              if (action) {
+                // CASE : we do have some actions to execute
+                console.info("THEN : we execute the action " + action.name);
+                // NOTE : in a further extension, passing the fsm and the events object could help
+                // in implementing asynchronous fsm
+                actionResult = action(model_, event_data, settings);
+              }
+
+              // Leave the current state
+              leave_state(from, model_, hash_states);
+
+              // Update the model before entering the next state
+              model = update_model(model_, actionResult.model_update);
+              // Emit the new model event
+              // new_model_event_emitter.onNext(model);
+              console.info("RESULTING IN UPDATED MODEL : ", model);
+              console.info("RESULTING IN OUTPUT : ", actionResult.output);
+
+              // ...and enter the next state (can be different from to if we have nesting state group)
+              const next_state = enter_next_state(
+                to,
+                actionResult.model_update,
+                hash_states
+              );
+              console.info("ENTERING NEXT STATE : ", next_state);
+
+              return { stop: true, output: actionResult.output }; // allows for chaining and stop
+              // chaining guard
+            } else {
+              // CASE : guard for transition is not fulfilled
+              console.log(
+                "CASE : " +
+                (predicate
+                  ? "guard " +
+                  predicate.name +
+                  " for transition NOT fulfilled..."
+                  : "no predicate")
+              );
+              return { stop: false, output: NO_OUTPUT };
             }
+          };
+          condition_checking_fn.displayName = from + condition_suffix;
+          return condition_checking_fn;
+        })(guard, settings);
 
-            // Leave the current state
-            leave_state(from, model_, hash_states);
-
-            // Update the model before entering the next state
-            model = update_model(model_, actionResult.model_update);
-            // Emit the new model event
-            // new_model_event_emitter.onNext(model);
-            console.info("RESULTING IN : ", model);
-            console.info("RESULTING IN OUTPUT : ", actionResult.output);
-
-            // ...and enter the next state (can be different from to if we have nesting state group)
-            const next_state = enter_next_state(to, actionResult.model_update, hash_states);
-            console.info("ENTERING NEXT STATE : ", next_state);
-
-            return { stop: true, output: actionResult.output }; // allows for chaining and stop
-                                                                // chaining guard
-          }
-          else {
-            // CASE : guard for transition is not fulfilled
-            console.log("CASE : "
-              + (predicate ? "guard " + predicate.name + " for transition NOT fulfilled..."
-                : "no predicate"));
-            return { stop: false, output: NO_OUTPUT };
-          }
+        return function arr_predicate_reduce_fn(
+          model_,
+          event_data,
+          current_state
+        ) {
+          const condition_checked = acc(model_, event_data, current_state);
+          return condition_checked.stop
+            ? condition_checked
+            : condition_checking_fn(model_, event_data, current_state);
         };
-        condition_checking_fn.displayName = from + condition_suffix;
-        return condition_checking_fn;
-      })(guard, settings);
-
-      return function arr_predicate_reduce_fn(model_, event_data, current_state) {
-        const condition_checked = acc(model_, event_data, current_state);
-        return condition_checked.stop
-          ? condition_checked
-          : condition_checking_fn(model_, event_data, current_state);
+      },
+      function dummy() {
+        return { stop: false, output: NO_OUTPUT };
       }
-    }, function dummy() {
-      return { stop: false, output: NO_OUTPUT }
-    });
+    );
   });
 
   function send_event(event_struct) {
@@ -335,7 +386,12 @@ export function create_state_machine(fsmDef, settings) {
     const event_name = keys(event_struct)[0];
     const event_data = event_struct[event_name];
 
-    return process_event(hash_states_struct.hash_states, event_name, event_data, model);
+    return process_event(
+      hash_states_struct.hash_states,
+      event_name,
+      event_data,
+      model
+    );
   }
 
   function process_event(hash_states, event, event_data, model) {
@@ -351,7 +407,7 @@ export function create_state_machine(fsmDef, settings) {
       const output = event_handler(model, event_data, current_state).output;
 
       // we read it anew as the execution of the event handler may have changed it
-      const current_state = hash_states[INIT_STATE].current_state_name;
+      const new_current_state = hash_states[INIT_STATE].current_state_name;
 
       // Two cases here:
       // 1. Init handlers, when present on the current state, must be acted on immediately
@@ -360,15 +416,15 @@ export function create_state_machine(fsmDef, settings) {
       // In this case event_data will carry on the data passed on from the last event (else we loose
       // the model?) 2. transitions with no events associated, only conditions (i.e. transient
       // states) In this case, there is no need for event data
-      if (is_auto_state[current_state]) {
+      if (is_auto_state[new_current_state]) {
         // CASE : transient state with no triggering event, just conditions
         // automatic transitions = transitions without events
-        const auto_event = is_init_state[current_state] ? INIT_EVENT : AUTO_EVENT;
+        const auto_event = is_init_state[new_current_state]
+          ? INIT_EVENT
+          : AUTO_EVENT;
         return send_event({ [AUTO_EVENT]: event_data });
-      }
-      else return output
-    }
-    else {
+      } else return output;
+    } else {
       // CASE : There is no transition associated to that event from that state
       console.error(`There is no transition associated to that event!`);
 
@@ -403,25 +459,23 @@ export function create_state_machine(fsmDef, settings) {
     let state_to;
     let state_to_name;
     // CASE : history state (H)
-    if (typeof(to) === 'function') {
+    if (typeof to === "function") {
       state_to_name = get_fn_name(to);
 
       const target_state = hash_states[state_to_name].history.last_seen_state;
       state_to_name = target_state
-        // CASE : history state (H) && existing history, target state is the last seen state
-        ? target_state
-        // CASE : history state (H) && no history (i.e. first time state is entered), target state
-        // is the entered state
-        : state_to_name;
+        ? // CASE : history state (H) && existing history, target state is the last seen state
+        target_state
+        : // CASE : history state (H) && no history (i.e. first time state is entered), target state
+          // is the entered state
+        state_to_name;
       state_to = hash_states[state_to_name];
-    }
-    // CASE : normal state
-    else if (to) {
+    } else if (to) {
+      // CASE : normal state
       state_to = hash_states[to];
       state_to_name = state_to.name;
-    }
-    else {
-      throw 'enter_state : unknown case! Not a state name, and not a history state to enter!'
+    } else {
+      throw "enter_state : unknown case! Not a state name, and not a history state to enter!";
     }
     state_to.active = true;
     hash_states[INIT_STATE].current_state_name = state_to_name;
@@ -445,8 +499,8 @@ export function create_state_machine(fsmDef, settings) {
 
   return {
     yield: send_event,
-    start: start,
-  }
+    start: start
+  };
 }
 
 /**
@@ -462,7 +516,8 @@ export function makeStreamingStateMachine(settings, fsmDef) {
   const fsm = create_state_machine(fsmDef, settings);
   const merge = settings && settings.merge;
   const of = settings && settings.of;
-  if (!merge || !of) throw `makeStreamingStateMachine : could not find an observable merge or of functions ! use Rx??`
+  if (!merge || !of)
+    throw `makeStreamingStateMachine : could not find an observable merge or of functions ! use Rx??`;
 
   /**
    * @param {Object.<Event_Label, Rx.Observable>} events A mapping of event labels to the corresponding event sources
@@ -473,17 +528,20 @@ export function makeStreamingStateMachine(settings, fsmDef) {
     return merge(
       // Contract : the `merge` function must subscribe to its source parameters in order of appearance
       // This ensures that the init event is indeed processed always before the other events
-      of({ [INIT_EVENT]: fsmDef.initial_extended_state }),
-      keys(events).map(eventLabel => {
-        const eventSource$ = events[eventLabel];
-        return eventSource$.map(eventData => ({ [eventLabel]: eventData }))
-      })
+      [of({ [INIT_EVENT]: fsmDef.initial_extended_state })].concat(
+        keys(events).map(eventLabel => {
+          const eventSource$ = events[eventLabel];
+
+          return eventSource$.map(eventData => ({ [eventLabel]: eventData }));
+        })
+      )
     )
       .map(fsm.yield)
       .filter(output => output !== NO_OUTPUT)
-  }
+      .share();
+  };
 
-  return computeActions
+  return computeActions;
 }
 
 /**
@@ -495,10 +553,10 @@ export function makeNamedActionsFactory(namedActionSpecs) {
   return Object.keys(namedActionSpecs).reduce((acc, actionName) => {
     const actionFactory = namedActionSpecs[actionName];
     actionFactory.displayName = actionName;
-    acc[actionName] = actionFactory
+    acc[actionName] = actionFactory;
 
-    return acc
-  }, {})
+    return acc;
+  }, {});
 }
 
 /**
@@ -515,28 +573,26 @@ export function decorateWithEntryActions(transitions, states, entryActions, merg
   // TODO : add a root to the object!! actually should write a traverse obj to avoid this kind of problem, obj is
   // special as it has no root...
   // will modify transitions.actions keeping the display name intact
-  const lenses = objectTreeLenses;
-  const { getChildren, constructTree, getLabel } = objectTreeLenses;
+  const { getLabel } = objectTreeLenses;
   const traverse = {
     strategy: PRE_ORDER,
     seed: {},
     visit: (accStateList, traversalState, tree) => {
       const treeLabel = getLabel(tree);
       const controlState = Object.keys(treeLabel)[0];
-      accStateList[controlState] = '';
+      accStateList[controlState] = "";
 
       return accStateList;
     }
   };
   const stateHashMap = traverseObj(traverse, states);
   const isValidEntryActions = Object.keys(entryActions).every(controlState => {
-    return stateHashMap[controlState] != null
+    return stateHashMap[controlState] != null;
   });
 
   if (!isValidEntryActions) {
-    throw `decorateWithEntryActions : found control states for which entry actions are defined, and yet do not exist in the state machine!`
-  }
-  else {
+    throw `decorateWithEntryActions : found control states for which entry actions are defined, and yet do not exist in the state machine!`;
+  } else {
     const decoratedTransitions = transitions.map(transitionRecord => {
       const { from, event, guards } = transitionRecord;
 
@@ -553,16 +609,13 @@ export function decorateWithEntryActions(transitions, states, entryActions, merg
             action: entryAction
               ? decorateWithExitAction(action, entryAction, mergeOutputFn)
               : action
-          }
+          };
         })
-      }
-
-
+      };
     });
 
-    return decoratedTransitions
+    return decoratedTransitions;
   }
-
 }
 
 /**
@@ -596,18 +649,20 @@ function decorateWithExitAction(action, entryAction, mergeOutputFn) {
     //        visualization. We choose however to not forbid the overwrite by contract. But beware.
     // ROADMAP : the best is, according to semantics, to actually send both separately
     return {
-      model_update: [].concat(actionUpdate || [], exitActionResult.model_update || []),
+      model_update: [].concat(
+        actionUpdate || [],
+        exitActionResult.model_update || []
+      ),
       output: mergeOutputFn([actionResult.output, exitActionResult.output])
-    }
+    };
   };
   decoratedAction.displayName = action.displayName;
 
-  return decoratedAction
+  return decoratedAction;
 }
 
 // TODO DOC: explain hierarchy, initial events, auto events, and other contracts
 // TODO DOC: document the obs merge settings (+filter necessary on prototype)
-
 
 /* test plan
 Case non-hierarchical state machine :

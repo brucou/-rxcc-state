@@ -34,7 +34,9 @@ export function applyUpdateOperations(/*OUT*/model, modelUpdateOperations) {
   assertContract(isArrayUpdateOperations, [modelUpdateOperations],
     `applyUpdateOperations : ${CONTRACT_MODEL_UPDATE_FN_RETURN_VALUE}`);
 
-  return applyPatch(model, modelUpdateOperations, true, false).newDocument;
+  // NOTE : we don't validate operations, to avoid throwing errors when for instance the value property for an
+  // `add` JSON operation is `undefined` ; and of course we don't mutate the document in place
+  return applyPatch(model, modelUpdateOperations, false, false).newDocument;
 }
 
 export function always(x) {return x}
@@ -191,5 +193,13 @@ export function mergeActionFactories(mergeOutputFn, arrayActionFactory) {
       // for instance, mergeFn = R.mergeAll or some variations around R.mergeDeepLeft
       output: (mergeOutputFn || defaultMerge)(arrayOutputs)
     }
+  }
+}
+
+/** @type ActionFactory*/
+export function identity(model, eventData, settings) {
+  return {
+    model_update: [],
+    output: NO_OUTPUT
   }
 }

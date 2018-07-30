@@ -1,14 +1,11 @@
 # Now
+- add support for tracing (spy via HOC, output configurable via interface - can be used for 
+debugging too)
 - include learning from `http://sismic.readthedocs.io/en/master/communication.html` in README
-- test with new object lenses that it still works
-- write the reactive part of the API (makeStream library)
 - document
 - API: keep the start for now. In another version should be able to start by sending an INIT event, 
 but that would be the responsibility of the library user?? Yes, I should do that, so only one `yield` method is exposed
   - The init was to make for statechart but this is no statechart anymore...
-- build
-  - try rollup once again, see if I can get ramda to be tree shaken, and fast-json-patch
-  - webpack config ?? the best I still have Rx, keep it for now
 - pass the tests again
   - normal library
 

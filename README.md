@@ -9,13 +9,17 @@ around a finite, fixed set of control states
 
 These computations can often be modelized advantageously[^1] by a class of state machines called 
 hierarchical extended state transducer. This library offers a way to define, and use such class of
- state machines. We will come back on the meaning of the fancy name, but in short a state 
- transducer is a state machine which may produce outputs.
+ state machines. We will come back on the meaning of the fancy name, but in short a [state 
+ transducer](https://en.wikipedia.org/wiki/Finite-state_transducer) is a state machine which may 
+ produce outputs.
 
 The major motivation for this library has been the specification and implementation of user 
 interfaces. As a matter of fact, to [every user interface can be associated a computation](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata) 
 relating a user input to an action to be performed on the interfaced systems. That computation 
 often has a logic [organized around a limited set of control states](#base-example).
+
+If user interfaces is also your key center of interest, you can directly [jump to the examples]
+(https://github.com/brucou/state-transducer#general-concepts).
 
 However, state machines are a very general tool, that have found miscellaneous applications in 
 unrelated contexts :
@@ -84,11 +88,11 @@ Note that if we add concurrency and messaging to extended hierarchical state tra
  any concurrency mechanism.[^2]
 
 [^2]: Our rationale is as follows :  
- - if there are no parallel regions, a statechart is basically a hierarchical state transducer. 
- That is often enough!
- - statecharts include activities and actions which may produce effects. We are seeking 
- an purely computational approach (i.e effect-less) to facilitate composition, reuse and testing.
-  Any concurrent model can be added on top as necessary.
+ - if there are no parallel regions, a statechart can be turned into a hierarchical state 
+ transducer. That is often enough!
+ - statecharts include activities and actions which may produce effects, and concurrency. We are 
+ seeking an purely computational approach (i.e effect-less) to facilitate composition, reuse and 
+  testing.  Any concurrent model can be added on top as necessary.
  - we estimate the concurrency semantics of statecharts to be unduely complicated vs. alternative
   concurrency models[^3]. That makes it difficult for programmers to elaborate a mental model of 
   the statecharts (in the presence of concurrency) and that makes it difficult for other users to
@@ -101,7 +105,7 @@ Note that if we add concurrency and messaging to extended hierarchical state tra
  
 [^3]: As a matter of fact, more than 20 different semantics have been proposed to define 
 precisely the concurrency model for statecharts, e.g Rhapsody, Statemate, VisualMate, StateFlow, 
-UML, etc. all have different concurrency models.
+UML, etc. do not share a single concurrency model.
  
 # Install
 **TODO**
@@ -115,13 +119,13 @@ frameworks)
   - it must be possible to add a concurrency and/or communication mechanism on top of the 
   current design 
   - it must be possible to integrate smoothly into React, Angular and your popular framework
-- complete encapsulation of the state of the state transducer
-- no effects performed by the machine
+  - support for both interactive and reactive programming
 - parallel and sequential composability of transducers
-- support for both interactive and reactive programming
 
 As a result of this, the following choices were made :
 
+- complete encapsulation of the state of the transducer
+- no effects performed by the machine
 - functional interface : the transducer is used through a sole `yield` function. While two 
 syntactic sugars are provided (`start` for sending the mandatory INIT event, `yield` is attached 
 to the state machine object). As such, the transducer is a black-box, and only its computed outputs
@@ -133,8 +137,8 @@ to the state machine object). As such, the transducer is a black-box, and only i
 - action factories return the **updates** to the extended state (JSON patch format) to avoid any 
 unwanted direct modification of the extended state
 - no restriction is made on output of transducers, but inputs must follow some conventions (if a
- machine's output match those conventions, two such machines can be composed by passing the 
- output of a yield from the first machine as an input to the second machine)
+ machine's output match those conventions, two such machines can be sequentially composed by 
+ passing the output of a yield from the first machine as an input to the second machine)
 - reactive programming is enabled by exposing a pure function of an input stream, which runs the 
 transducer for each incoming input, thus generating a sequence of outputs
 
@@ -154,7 +158,14 @@ We provide a way to construct such a function with the `makeStreamingStateMachin
 create a stream transducer, which translates an input stream into an output stream.
 
 ## General concepts
-To help illustrate the concepts, and the terminology, we will use two examples, featuring 
+is an object which encapsulates state, exposes a function by which input is received
+Our state transducer encapsulates state, receives an input, and based on its encapsulated state,
+ input, and configuration produces two things : 
+
+- a list of updates to apply internally to the extended state
+- an external output for the consumer of the state transducer
+
+To help illustrate further the concepts, and the terminology, we will use two examples, featuring 
 basic and advanced features on the hierarchical state transducer model : 
 
 - a real use case of non-hierarchical extended state machine applied to a web application user 
@@ -185,10 +196,24 @@ That application process concretely consists of 5 screens whose flow is defined 
 This in turn was turned into a non-trivial state machine (6 states, 17 transitions) orchestrating 
 the screens to display in function of the user inputs. The machine does not display the screen 
 itself (it performs no effects), it computes which screen to display according to the sequence of
- inputs performed by the user and its extended state (which includes here the state of the 
- application process) :
+ inputs performed by the user and its encapsulated state (user-entered data, data validation, etc
+ .) :
  
 ![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
+
+For illustration purposes, the encapsulated state has the following shape :
+
+```javascript
+{
+  user,
+  opportunity,
+  project,
+  userApplication,
+  teams,
+  errorMessage: null,
+  validationMessages: {}
+}
+```
 
 ### CD drawer example
 This example is taken from Ian Horrock's seminal book on statecharts and is the specification of
