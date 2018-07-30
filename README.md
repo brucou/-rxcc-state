@@ -196,9 +196,9 @@ This in turn was turned into a non-trivial state machine (6 states, ~20 transiti
 the screens to display in function of the user inputs. The machine **does not display the screen 
 itself** (it performs no effects), **it computes which screen to display** according to the 
 sequence of inputs performed by the user and its encapsulated state (user-entered data, data 
-validation, etc.). The action `display screen` must be understood as a regular piece of data whose 
-meaning is to be interpreted down the road by the portion of the program in charge of realizing 
-effcts. The state machine can be visualized as follows :
+validation, etc.). The action `display screen` in the graph below must be understood as a regular 
+piece of data whose meaning is to be interpreted down the road by the portion of the program in 
+charge of realizing effects. The state machine can be visualized as follows :
  
 ![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
 
