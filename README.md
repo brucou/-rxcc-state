@@ -200,7 +200,7 @@ validation, etc.). The action `display screen` in the graph below must be unders
 piece of data whose meaning is to be interpreted down the road by the portion of the program in 
 charge of realizing effects. The state machine can be visualized as follows :
  
-![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
+![illustration of basic terminology](assets/sparks%20application%20process%20with%20comeback%20proper%20syntax%20-%20flat%20fsm.png)
 
 In our example, the encapsulated state has the following shape :
 
