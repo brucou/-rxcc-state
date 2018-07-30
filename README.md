@@ -158,9 +158,9 @@ We provide a way to construct such a function with the `makeStreamingStateMachin
 create a stream transducer, which translates an input stream into an output stream.
 
 ## General concepts
-is an object which encapsulates state, exposes a function by which input is received
-Our state transducer encapsulates state, receives an input, and based on its encapsulated state,
- input, and configuration produces two things : 
+Our state transducer is an object which encapsulates state, exposes a function by which input is 
+received. That function, based on the transducer's encapsulated state and configuration, and the 
+received input produces two things : 
 
 - a list of updates to apply internally to the extended state
 - an external output for the consumer of the state transducer
@@ -185,19 +185,18 @@ regular extended state machine.
 
 This example deals with a typical multi-step application process, whose user interface is made of a 
 sequence of screens. In each screen, the user is required to introduce or review some 
-information, and navigate through the application process up to completion, by clicking on 
-buttons corresponding to the user decision. 
+information, and navigate through the application process up to completion.
 
 That application process concretely consists of 5 screens whose flow is defined by the UX team as
  follows :
  
 ![User flow](https://github.com/brucou/component-combinators/raw/master/examples/volunteerApplication/assets/volunteerApplication/application%20process.png) 
 
-This in turn was turned into a non-trivial state machine (6 states, 17 transitions) orchestrating 
-the screens to display in function of the user inputs. The machine does not display the screen 
-itself (it performs no effects), it computes which screen to display according to the sequence of
- inputs performed by the user and its encapsulated state (user-entered data, data validation, etc
- .) :
+This in turn was turned into a non-trivial state machine (6 states, ~20 transitions) orchestrating 
+the screens to display in function of the user inputs. The machine **does not display the screen 
+itself** (it performs no effects), **it computes which screen to display** according to the 
+sequence of inputs performed by the user and its encapsulated state (user-entered data, data 
+validation, etc.) :
  
 ![illustration of basic terminology](https://i.imgur.com/byRSrGH.png)
 
