@@ -11,7 +11,7 @@ These computations can often be modelized advantageously[^1] by a class of state
 hierarchical extended state transducer. This library offers a way to define, and use such class of
  state machines. We will come back on the meaning of the fancy name, but in short a [state 
  transducer](https://en.wikipedia.org/wiki/Finite-state_transducer) is a state machine which may 
- produce outputs. Most of the time, we will just call them just state machine anyways, but keep 
+ produce outputs. Most of the time, we will call them just state machine anyways, but keep 
  in mind that every word in <em>hierarchical extended state transducer</em> has a reason to be.
 
 Now, the whole thing can sound very abstract but the major motivation for this library has been the 
@@ -32,11 +32,11 @@ native option is available? Facebook's [`regenerator`](https://github.com/facebo
 is a good example of such.
 
 So state machines are nothing like a new tool, but with a fairly extended and proven track in both 
-industrial and consumer applications. However, it has to be said that, when it comes to user 
-interfaces, it is a tool fairly unknown to developers. There are obviously cultural and 
-historical reasons for that, which it is not useful to describe here. However, could it be that 
-we have here another tool in our toolbox which can help us write better (at least in the sense of
- correctness) user interfaces?
+industrial and consumer applications. However, it has to be said that, when it comes to 
+graphical user interfaces, it is a tool fairly unknown to developers. There are obviously 
+cultural and historical reasons for that, which it is not useful to describe here. However, 
+could it be that we have here another tool in our toolbox which can help us write better (at 
+least in the sense of correctness) user interfaces?
 
 This library was born from :
 
