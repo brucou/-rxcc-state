@@ -11,26 +11,48 @@ These computations can often be modelized advantageously[^1] by a class of state
 hierarchical extended state transducer. This library offers a way to define, and use such class of
  state machines. We will come back on the meaning of the fancy name, but in short a [state 
  transducer](https://en.wikipedia.org/wiki/Finite-state_transducer) is a state machine which may 
- produce outputs.
+ produce outputs. Most of the time, we will just call them just state machine anyways, but keep 
+ in mind that every word in <em>hierarchical extended state transducer</em> has a reason to be.
 
-The major motivation for this library has been the specification and implementation of user 
-interfaces. As a matter of fact, to [every user interface can be associated a computation](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata) 
+Now, the whole thing can sound very abstract but the major motivation for this library has been the 
+specification and implementation of user interfaces. As a matter of fact, to [every user 
+interface can be associated a computation](https://brucou.github.io/posts/user-interfaces-as-reactive-systems/#reactive-systems-as-automata) 
 relating a user input to an action to be performed on the interfaced systems. That computation 
-often has a logic [organized around a limited set of control states](#base-example).
+often has a logic [organized around a limited set of control states](#base-example). Exactly what
+ we just wrote about. [Jump to the examples](https://github.com/brucou/state-transducer#general-concepts).
 
-If user interfaces is also your key center of interest, you can directly [jump to the examples]
-(https://github.com/brucou/state-transducer#general-concepts).
+The use of state machines is not unusual for safety-critical software for embedded systems.  
+Nearly all safety-critical code on the Airbus A380 is implemented with a [suite of tools](https://www.ansys.com/products/embedded-software/ansys-scade-suite/scade-suite-capabilities#cap1) which 
+uses state machines both as [specification](https://www.youtube.com/watch?list=PL0lZXwHtV6Ok5s-iSkBjHirM1fu53_Phv&v=EHP_spl5xU0) and [implementation](https://www.youtube.com/watch?v=523bJ1vZZmw&index=5&list=PL0lZXwHtV6Ok5s-iSkBjHirM1fu53_Phv) target. 
 
-However, state machines are a very general tool, that have found miscellaneous applications in 
-unrelated contexts :
+State machines have also been used extensively in [games of reasonable complexity](http://howtomakeanrpg.com/a/state-machines.html), and [tutorials](https://www.gamedev.net/articles/programming/general-and-gameplay-programming/state-machines-in-games-r2982/) abound on the subject.
 
-- ES6 generators are transpiled to ES5 state transducers when there is no native support
- in browser (cf. facebook's [`regenerator`](https://github.com/facebook/regenerator))
-- user interface specification and implementation for embedded systems
-- [model-based testing, and test input generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf)
-- AI's decision making in games
+More prosaically, did you know that ES6 generators compile down to ES5 state machines where no 
+native option is available? Facebook's [`regenerator`](https://github.com/facebook/regenerator) 
+is a good example of such.
 
-Concretely, we have so far successfully used this library :
+So state machines are nothing like a new tool, but with a fairly extended and proven track in both 
+industrial and consumer applications. However, it has to be said that, when it comes to user 
+interfaces, it is a tool fairly unknown to developers. There are obviously cultural and 
+historical reasons for that, which it is not useful to describe here. However, could it be that 
+we have here another tool in our toolbox which can help us write better (at least in the sense of
+ correctness) user interfaces?
+
+This library was born from :
+
+- the desire to investigate the extent of the applicability of such tool both for specification and 
+implementation of user interfaces
+  - the experience with gaming shows that, passed a given level of AI complexity, other 
+  techniques are better suited. Does this apply to user interfaces? What would be a sweet spot?
+- the absence of existing javascript libraries which satisfy our [design criteria](https://github.com/brucou/state-transducer#api-design)
+  - mostly, we want the state machine library API design to be as close as possible from the 
+  mathematical object denoting it. This should allow us to reason about it, compose and reuse 
+  it easily. 
+  - most libraries we found either do not feature hierarchy in their state machines, or use a 
+  rather imperative API, or complect concurrency with control flow
+
+It is obviously a [work in progress](#roadmap), the current version is taken from code written 
+two/three years ago and rejuvenated. It works nicely though and have already been used succesfully :
 
 - in [multi-steps workflows](https://github.com/brucou/component-combinators/tree/master/examples/volunteerApplication), a constant feature of enterprise software today
 - for ['smart' synchronous streams](https://github.com/brucou/partial-synchronous-streams), which
@@ -92,12 +114,12 @@ Note that if we add concurrency and messaging to extended hierarchical state tra
  transducer. That is often enough!
  - statecharts include activities and actions which may produce effects, and concurrency. We are 
  seeking an purely computational approach (i.e effect-less) to facilitate composition, reuse and 
-  testing.  Any concurrent model can be added on top as necessary.
- - we estimate the concurrency semantics of statecharts to be unduely complicated vs. alternative
+  testing.  Any [concurrent or communication model](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.92.6145&rep=rep1&type=pdf) can be added on top as necessary.
+ - we estimate the concurrency semantics of statecharts to be somewhat complicated vs. alternative
   concurrency models[^3]. That makes it difficult for programmers to elaborate a mental model of 
   the statecharts (in the presence of concurrency) and that makes it difficult for other users to
-   reason based solely on the visualization of concurrent statecharts. Those issues are 
-   unavoidable passed a given scale or complexity of the modelized system
+   reason based solely on the visualization of concurrent statecharts. Those issues however are 
+   not unmanageable for concurrent statecharts with little concurrency and messaging.
  - some [statecharts practitioners](http://sismic.readthedocs.io/en/master/communication.html#) 
  favor having separate state charts communicating in an ad-hoc way rather than an integrated 
  statechart model where concurrent state charts are gathered in nested states of a single 
@@ -108,7 +130,7 @@ precisely the concurrency model for statecharts, e.g Rhapsody, Statemate, Visual
 UML, etc. do not share a single concurrency model.
  
 # Install
-**TODO**
+`npm install state-transducer`
 
 # API
 ## API design
@@ -116,8 +138,7 @@ The key objectives for the API was :
 
 - generality and reusability (there is no provision made to accommodate specific use cases or 
 frameworks)
-  - it must be possible to add a concurrency and/or communication mechanism on top of the 
-  current design 
+  - it must be possible to add a [concurrency and/or communication mechanism](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.92.6145&rep=rep1&type=pdf) on top of the current design
   - it must be possible to integrate smoothly into React, Angular and your popular framework
   - support for both interactive and reactive programming
 - parallel and sequential composability of transducers
@@ -125,11 +146,10 @@ frameworks)
 As a result of this, the following choices were made :
 
 - complete encapsulation of the state of the transducer
+- single public method : the transducer is used through a sole `yield` function (though a 
+`start` syntactic sugar is provided for `yield`ing the mandatory INIT event). As such, the 
+transducer is a black-box, and only its computed outputs can be observed
 - no effects performed by the machine
-- functional interface : the transducer is used through a sole `yield` function. While two 
-syntactic sugars are provided (`start` for sending the mandatory INIT event, `yield` is attached 
-to the state machine object). As such, the transducer is a black-box, and only its computed outputs
-  can be observed
 - no exit and entry actions, or activities as in other state machine formalisms
   - there is no loss of generality as both entry and exit actions can be implemented with our 
   state transducer, there is simply no API or syntactic support for it
@@ -158,8 +178,8 @@ We provide a way to construct such a function with the `makeStreamingStateMachin
 create a stream transducer, which translates an input stream into an output stream.
 
 ## General concepts
-Our state transducer is an object which encapsulates state, and exposes a function by which input
- is received. That function, based on the transducer's encapsulated state and configuration, and the 
+Our state transducer is an object which encapsulates state, and exposes a single function by which 
+input is received. That function, based on the transducer's encapsulated state and configuration, and the 
 received input produces two things : 
 
 - a list of updates to apply internally to the extended state
@@ -192,7 +212,7 @@ That application process concretely consists of 5 screens whose flow is defined 
  
 ![User flow](https://github.com/brucou/component-combinators/raw/master/examples/volunteerApplication/assets/volunteerApplication/application%20process.png) 
 
-This in turn was turned into a non-trivial state machine (6 states, ~20 transitions) orchestrating 
+This in turn was turned into a non-trivial state machine (7 states, ~20 transitions) orchestrating 
 the screens to display in function of the user inputs. The machine **does not display the screen 
 itself** (it performs no effects), **it computes which screen to display** according to the 
 sequence of inputs performed by the user and its encapsulated state (user-entered data, data 
@@ -371,8 +391,9 @@ used when referring to state machines.
 ### Transducer behaviour
 We give here a quick summary of the operational semantics for the state transducer :
 
-- the machine is configured with a set of states, an initial extended state, transitions, guards, action factories, and user settings
-- the machine has a fixed initial control state prior to starting
+- the machine is configured with a set of control states, an initial extended state, transitions, 
+guards, action factories, and user settings
+- the machine is in a fixed initial control state at starting time
 - starting the machine (`.start()`) triggers the internal INIT event which advances the state 
 machine out of the initial control state towards the relevant user-configured control state.
 - **TODO** also semantics of history states
@@ -419,3 +440,11 @@ Automated visualization works well with simple graphs, but seems to encounter tr
 
 # Possible improvements
 - any ideas? Post an issue!
+
+# Roadmap
+- [x] add entry actions
+- [x] online visualizer
+- [ ] add exit actions
+- [ ] add tracing/debugging support
+- [ ] support [model-based testing, and test input generation](https://pdfs.semanticscholar.org/f8e6/b3019c0d5422f35d2d98c242f149184992a3.pdf) 
+
